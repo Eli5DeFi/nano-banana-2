@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nano Banana 2 — Prompt Dashboard & Library</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --yellow: #f5c842;
+      --yellow-dim: #c9a535;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --orange: #fb923c;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --text: #e4e4e7;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo span { font-size: 13px; color: var(--text-dim); display: block; }
+    .header-meta {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--text-dim);
+      align-items: center;
+    }
+    .header-meta .badge {
+      background: var(--surface2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .creator-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      color: #000;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .creator-link:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,200,66,0.3); }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dim);
+      transition: all 0.2s;
+      white-space: nowrap;
+      border: none;
+      background: none;
+    }
+    .tab:hover { color: var(--text); background: var(--surface2); }
+    .tab.active {
+      background: var(--yellow);
+      color: #000;
+      font-weight: 600;
+    }
+
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    .stat-card.yellow .value { color: var(--yellow); }
+    .stat-card.green .value { color: var(--green); }
+    .stat-card.blue .value { color: var(--blue); }
+    .stat-card.purple .value { color: var(--purple); }
+    .stat-card.pink .value { color: var(--pink); }
+    .stat-card.orange .value { color: var(--orange); }
+
+    /* Section */
+    .section { margin-bottom: 40px; }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--yellow);
+    }
+
+    /* Comparison Table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      background: var(--surface2);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+    tr:hover td { background: var(--surface); }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tag-new { background: rgba(74,222,128,0.15); color: var(--green); }
+    .tag-improved { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .tag-same { background: rgba(113,113,122,0.15); color: var(--text-muted); }
+
+    /* Pricing Cards */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pricing-card.featured {
+      border-color: var(--yellow);
+      box-shadow: 0 0 30px rgba(245,200,66,0.1);
+    }
+    .pricing-card.featured::before {
+      content: 'BEST VALUE';
+      position: absolute;
+      top: 12px;
+      right: -28px;
+      background: var(--yellow);
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 32px;
+      transform: rotate(45deg);
+    }
+    .pricing-card .tier { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+    .pricing-card .res { font-size: 32px; font-weight: 700; margin: 8px 0; }
+    .pricing-card .price { font-size: 18px; color: var(--yellow); font-weight: 600; }
+    .pricing-card .price-pro { font-size: 14px; color: var(--text-muted); text-decoration: line-through; margin-left: 8px; }
+    .pricing-card .saving { color: var(--green); font-size: 13px; margin-top: 4px; }
+    .pricing-card .use { font-size: 13px; color: var(--text-dim); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+    /* Prompt Library */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: var(--yellow); color: var(--text); }
+    .filter-btn.active { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 600; }
+    .filter-count {
+      background: rgba(255,255,255,0.15);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .prompts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+    .prompt-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .prompt-card:hover {
+      border-color: var(--yellow);
+      box-shadow: 0 4px 20px rgba(245,200,66,0.08);
+      transform: translateY(-1px);
+    }
+    .prompt-card .aesthetic-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .prompt-card .prompt-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .prompt-card .prompt-text {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      background: var(--surface2);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      margin-bottom: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .prompt-card .prompt-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .prompt-card .source-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .copy-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--yellow); color: #000; border-color: var(--yellow); }
+    .copy-btn.copied { background: var(--green); color: #000; border-color: var(--green); }
+
+    /* Aesthetic Tags Colors */
+    .aes-photorealistic { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .aes-anime { background: rgba(244,114,182,0.15); color: var(--pink); }
+    .aes-cyberpunk { background: rgba(167,139,250,0.15); color: var(--purple); }
+    .aes-product { background: rgba(251,146,60,0.15); color: var(--orange); }
+    .aes-watercolor { background: rgba(34,211,238,0.15); color: var(--cyan); }
+    .aes-fantasy { background: rgba(74,222,128,0.15); color: var(--green); }
+    .aes-typography { background: rgba(245,200,66,0.15); color: var(--yellow); }
+    .aes-architecture { background: rgba(248,113,113,0.15); color: var(--red); }
+    .aes-pixel { background: rgba(167,139,250,0.15); color: var(--purple); }
+    .aes-editorial { background: rgba(244,114,182,0.15); color: var(--pink); }
+    .aes-concept { background: rgba(34,211,238,0.15); color: var(--cyan); }
+    .aes-food { background: rgba(251,146,60,0.15); color: var(--orange); }
+    .aes-branding { background: rgba(245,200,66,0.15); color: var(--yellow); }
+    .aes-uiux { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .aes-retro { background: rgba(248,113,113,0.15); color: var(--red); }
+    .aes-3d { background: rgba(74,222,128,0.15); color: var(--green); }
+
+    /* Search */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-wrap input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--yellow); }
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Tips Grid */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .tip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .tip-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--yellow); }
+    .tip-card p { font-size: 13px; color: var(--text-dim); }
+    .tip-card code {
+      display: block;
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--surface2);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'SF Mono', monospace;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* Features List */
+    .features-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .feature-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .feature-item h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .feature-item p { font-size: 13px; color: var(--text-dim); }
+    .feature-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .prompts-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+
+    /* CLI section */
+    .cli-example {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .cli-example .label { font-size: 13px; color: var(--yellow); font-weight: 600; margin-bottom: 8px; }
+    .cli-example pre {
+      background: var(--surface2);
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'SF Mono', monospace;
+      overflow-x: auto;
+      color: var(--text);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">&#127820;</div>
+          <div>
+            <h1>Nano Banana 2</h1>
+            <span>Prompt Dashboard & Library</span>
+          </div>
+        </div>
+        <div class="header-meta">
+          <a href="prompt-creator.html" class="creator-link">&#9998; Prompt Creator</a>
+          <span class="badge">gemini-3.1-flash-image-preview</span>
+          <span class="badge">Feb 2026</span>
+          <span class="badge">141+ Countries</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab" onclick="switchTab('pricing')">Pricing</button>
+      <button class="tab" onclick="switchTab('features')">Features & Advances</button>
+      <button class="tab" onclick="switchTab('prompts')">Prompt Library</button>
+      <button class="tab" onclick="switchTab('tips')">Prompting Tips</button>
+      <button class="tab" onclick="switchTab('cli')">CLI Tool</button>
+    </div>
+
+    <!-- ====== OVERVIEW TAB ====== -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card yellow">
+          <div class="label">Max Resolution</div>
+          <div class="value">4K</div>
+          <div class="sub">Native, up from 2K</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">Cost Savings</div>
+          <div class="value">~40%</div>
+          <div class="sub">vs Nano Banana Pro</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Subject Consistency</div>
+          <div class="value">5+14</div>
+          <div class="sub">Characters + Objects</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="label">Aspect Ratios</div>
+          <div class="value">14</div>
+          <div class="sub">Including 4:1, 8:1</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="label">Reference Images</div>
+          <div class="value">6-14</div>
+          <div class="sub">For style transfer</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="label">Speed</div>
+          <div class="value">2x</div>
+          <div class="sub">Faster than NB1</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> What is Nano Banana 2?</div>
+        <div class="tip-card" style="margin-bottom: 16px;">
+          <p>Nano Banana 2 is Google's latest AI image generation model (model ID: <code style="display:inline;padding:2px 6px;margin:0;">gemini-3.1-flash-image-preview</code>), launched February 2026. It combines Pro-grade visual quality with Flash-tier speed, delivering near-perfect text rendering, subject consistency across 5 characters and 14 objects, native 4K resolution, and real-time search grounding &mdash; all at up to 40% lower API cost than Nano Banana Pro.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> NB1 vs NB2 Comparison</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Feature</th><th>Nano Banana 1</th><th>Nano Banana 2</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Speed</td><td>Standard Flash</td><td>2x faster</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>Text Quality</td><td>Basic / wobbly</td><td>Near-perfect legibility</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>Scene Understanding</td><td>Pattern matching</td><td>Physics + intent reasoning</td><td><span class="tag tag-new">New</span></td></tr>
+              <tr><td>Subject Consistency</td><td>Limited</td><td>5 characters + 14 objects</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>Max Resolution</td><td>2K</td><td>Native 4K</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>Aspect Ratios</td><td>Standard set</td><td>+4:1, 1:4, 8:1, 1:8</td><td><span class="tag tag-new">New</span></td></tr>
+              <tr><td>API Cost</td><td>Baseline</td><td>Up to 40% cheaper</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>Search Grounding</td><td>Basic</td><td>Google Search + Image Search</td><td><span class="tag tag-new">New</span></td></tr>
+              <tr><td>Thinking Mode</td><td>None</td><td>Adjustable (minimal/high)</td><td><span class="tag tag-new">New</span></td></tr>
+              <tr><td>Instruction Following</td><td>Moderate</td><td>Strict multi-layered</td><td><span class="tag tag-improved">Improved</span></td></tr>
+              <tr><td>In-Image Translation</td><td>None</td><td>Multi-language support</td><td><span class="tag tag-new">New</span></td></tr>
+              <tr><td>Availability</td><td>Limited</td><td>141+ countries, 8+ languages</td><td><span class="tag tag-improved">Improved</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PRICING TAB ====== -->
+    <div id="tab-pricing" class="tab-content">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> API Pricing per Image</div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="tier">Entry</div>
+            <div class="res">512px</div>
+            <div class="price">$0.045</div>
+            <div class="sub">Flash only</div>
+            <div class="use">Quick concepts, pixel art, thumbnails, rapid iteration</div>
+          </div>
+          <div class="pricing-card featured">
+            <div class="tier">Default</div>
+            <div class="res">1K</div>
+            <div class="price">$0.067 <span class="price-pro">$0.134</span></div>
+            <div class="saving">Save ~50% vs Pro</div>
+            <div class="use">Social media, web graphics, standard content</div>
+          </div>
+          <div class="pricing-card">
+            <div class="tier">Professional</div>
+            <div class="res">2K</div>
+            <div class="price">$0.101 <span class="price-pro">$0.134</span></div>
+            <div class="saving">Save ~25% vs Pro</div>
+            <div class="use">Print marketing, typography-focused, presentations</div>
+          </div>
+          <div class="pricing-card">
+            <div class="tier">Maximum</div>
+            <div class="res">4K</div>
+            <div class="price">$0.151 <span class="price-pro">$0.240</span></div>
+            <div class="saving">Save ~37% vs Pro</div>
+            <div class="use">Large format, texture detail, production assets</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:32px;">
+        <div class="section-title"><span class="dot"></span> Model Selection Guide</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Use Case</th><th>Recommended Model</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Rapid iteration / brainstorming</td><td>NB2 Flash</td><td>Speed + low cost</td></tr>
+              <tr><td>Social media content</td><td>NB2 Flash @ 1K</td><td>Best value for quality</td></tr>
+              <tr><td>Real-time data graphics</td><td>NB2 Flash</td><td>Search grounding + speed</td></tr>
+              <tr><td>Text-heavy designs</td><td>NB2 Flash @ 2K+</td><td>Near-perfect text rendering</td></tr>
+              <tr><td>Complex multi-character scenes</td><td>NB Pro</td><td>Advanced reasoning</td></tr>
+              <tr><td>Production print assets</td><td>NB Pro @ 4K</td><td>Maximum quality</td></tr>
+              <tr><td>High-volume batch generation</td><td>NB2 Flash + Batch API</td><td>Cost efficiency</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== FEATURES TAB ====== -->
+    <div id="tab-features" class="tab-content">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> Core Capabilities</div>
+        <div class="features-list">
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--yellow)"></span> Text Rendering</h3>
+            <p>Near-perfect legible text. Supports marketing mockups, infographics, menus, diagrams. In-image localization across multiple languages. Wrap exact text in quotes for precision.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--green)"></span> Subject Consistency</h3>
+            <p>Lock 5 characters + 14 objects across multiple generations. Face-locking with reference images. Frame-to-frame consistency for animation prep.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--blue)"></span> Semantic Editing</h3>
+            <p>Natural language edits without manual masking. Model identifies target objects and applies changes while preserving everything else. Multi-turn conversational editing.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--purple)"></span> Reference-Based Generation</h3>
+            <p>Upload 6-14 reference images for style transfer. Mix objects + character refs. Last uploaded reference determines output aspect ratio.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--cyan)"></span> Search Grounding</h3>
+            <p>Google Search + Image Search integration for real-time accurate rendering. Generate infographics with live data. Verify facts during generation.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--orange)"></span> Transparent Assets</h3>
+            <p>Green screen generation with auto background removal. Broadcast-grade quality via FFmpeg pipeline. Auto-crop padding. Perfect for game sprites and overlays.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--pink)"></span> Thinking Mode</h3>
+            <p>Adjustable reasoning levels (minimal/high). Physics + intent reasoning for complex scenes. Better handling of multi-layered, multi-constraint prompts.</p>
+          </div>
+          <div class="feature-item">
+            <h3><span class="feature-dot" style="background:var(--red)"></span> Dimensional Translation</h3>
+            <p>Convert 2D sketches to photorealistic 3D renders. Maintain proportions and style. Style transfer while preserving subject identity.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:32px">
+        <div class="section-title"><span class="dot"></span> Supported Resolutions & Ratios</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Resolution</th><th>Aspect Ratios</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>512px</td><td>All 14 ratios</td><td>Quick concepts, pixel art</td></tr>
+              <tr><td>1K (default)</td><td>All 14 ratios</td><td>Social media, web graphics</td></tr>
+              <tr><td>2K</td><td>All 14 ratios</td><td>Print marketing, typography</td></tr>
+              <tr><td>4K</td><td>All 14 ratios</td><td>Large format, production</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:12px 16px;font-size:13px;color:var(--text-dim);">
+            <strong>Ratios:</strong> 1:1 &bull; 1:4 &bull; 1:8 &bull; 2:3 &bull; 3:2 &bull; 3:4 &bull; 4:1 &bull; 4:3 &bull; 4:5 &bull; 5:4 &bull; 8:1 &bull; 9:16 &bull; 16:9 &bull; 21:9
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PROMPT LIBRARY TAB ====== -->
+    <div id="tab-prompts" class="tab-content">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="promptSearch" placeholder="Search prompts..." oninput="filterPrompts()">
+      </div>
+
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All<span class="filter-count" id="count-all"></span></button>
+        <button class="filter-btn" onclick="setFilter('photorealistic', this)">Photorealistic</button>
+        <button class="filter-btn" onclick="setFilter('anime', this)">Anime</button>
+        <button class="filter-btn" onclick="setFilter('cyberpunk', this)">Cyberpunk</button>
+        <button class="filter-btn" onclick="setFilter('product', this)">Product</button>
+        <button class="filter-btn" onclick="setFilter('watercolor', this)">Watercolor</button>
+        <button class="filter-btn" onclick="setFilter('fantasy', this)">Fantasy</button>
+        <button class="filter-btn" onclick="setFilter('typography', this)">Typography</button>
+        <button class="filter-btn" onclick="setFilter('architecture', this)">Architecture</button>
+        <button class="filter-btn" onclick="setFilter('pixel', this)">Pixel Art</button>
+        <button class="filter-btn" onclick="setFilter('editorial', this)">Editorial</button>
+        <button class="filter-btn" onclick="setFilter('concept', this)">Concept Art</button>
+        <button class="filter-btn" onclick="setFilter('food', this)">Food</button>
+        <button class="filter-btn" onclick="setFilter('branding', this)">Branding</button>
+        <button class="filter-btn" onclick="setFilter('uiux', this)">UI/UX</button>
+        <button class="filter-btn" onclick="setFilter('retro', this)">Retro</button>
+        <button class="filter-btn" onclick="setFilter('3d', this)">3D Render</button>
+      </div>
+
+      <div class="prompts-grid" id="promptsGrid"></div>
+    </div>
+
+    <!-- ====== TIPS TAB ====== -->
+    <div id="tab-tips" class="tab-content">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> Prompting Best Practices</div>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <h3>Use Natural Language</h3>
+            <p>Write conversational descriptions, not comma-separated tags. Describe the scene as if telling someone what to photograph.</p>
+            <code>BAD:  "cyberpunk samurai, neon, rain, 4k"
+GOOD: "A lone samurai standing in a rain-drenched cyberpunk alley, neon signs reflecting off wet pavement, shot from a low angle with a 35mm lens"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Edit, Don't Regenerate</h3>
+            <p>If an image is 80% right, refine it conversationally instead of starting over. The model preserves context across turns.</p>
+            <code>"Change the lighting to golden hour"
+"Move the character slightly to the left"
+"Make the background more blurry"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Specify Context & Intent</h3>
+            <p>Tell the model the purpose. "For a Michelin-starred restaurant Instagram post" gives it the artistic judgment to make the right decisions.</p>
+            <code>"A plated dessert, photographed for a fine dining restaurant's social media — macro lens, shallow depth of field, dark moody background with a single spotlight"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Material & Texture Details</h3>
+            <p>Be explicit about physical properties for maximum realism.</p>
+            <code>"Brushed aluminum with micro-scratches"
+"Velvet with subtle sheen under side lighting"
+"Aged leather with patina and worn edges"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Text in Images</h3>
+            <p>Wrap exact text in quotes. Specify font characteristics. Add "high contrast for readability" and "typography-focused."</p>
+            <code>"A coffee shop menu board with the text 'COLD BREW $5' in bold sans-serif, white chalk on matte black, clearly legible, typography-focused"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Semantic Negative Prompting</h3>
+            <p>Describe what you want, not what to avoid. The model responds better to positive direction.</p>
+            <code>BAD:  "No cars, no people, no modern buildings"
+GOOD: "An empty medieval cobblestone plaza with timber-frame buildings and hanging flower baskets, morning mist"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Camera & Lens Language</h3>
+            <p>Photography terms dramatically improve output quality. Specify focal length, aperture, film stock.</p>
+            <code>"Shot on 85mm f/1.8, shallow DOF"
+"Kodak Portra 400 film grain"
+"Wide-angle 24mm, leading lines"
+"Hasselblad medium format quality"</code>
+          </div>
+          <div class="tip-card">
+            <h3>Resolution Strategy</h3>
+            <p>Match resolution to your use case. Don't waste money on 4K for a social media thumbnail.</p>
+            <code>512px → Quick concepts, pixel art
+1K   → Social media, web graphics
+2K   → Print marketing, typography
+4K   → Large format, texture study</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CLI TAB ====== -->
+    <div id="tab-cli" class="tab-content">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span> nano-banana-2-skill CLI</div>
+        <p style="color:var(--text-dim);margin-bottom:20px;font-size:14px;">Open-source CLI + Claude Code plugin from <a href="https://github.com/kingbootoshi/nano-banana-2-skill" style="color:var(--yellow);">kingbootoshi/nano-banana-2-skill</a> (MIT license)</p>
+
+        <div class="cli-example">
+          <div class="label">Installation</div>
+          <pre>git clone https://github.com/kingbootoshi/nano-banana-2-skill.git
+cd nano-banana-2-skill
+bun install
+bun link
+
+# Set API key
+echo "GEMINI_API_KEY=your_key_here" > ~/.nano-banana/.env</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">Basic Generation</div>
+          <pre>nano-banana "A serene mountain lake at sunrise, mist rising"</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">With Resolution & Aspect Ratio</div>
+          <pre>nano-banana "Product hero shot of headphones on marble" -s 4K -a 16:9 -o headphones-hero</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">Transparent Asset (Green Screen)</div>
+          <pre>nano-banana "Fantasy warrior character sprite, full body" -t -s 2K</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">With Reference Images</div>
+          <pre>nano-banana "Same character in a different pose" -r ref1.jpg -r ref2.jpg -r ref3.jpg</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">Pro Model for Maximum Quality</div>
+          <pre>nano-banana "Complex fantasy battle scene with 5 characters" -m pro -s 4K</pre>
+        </div>
+
+        <div class="cli-example">
+          <div class="label">Check Spending</div>
+          <pre>nano-banana --costs</pre>
+        </div>
+
+        <div class="section" style="margin-top:24px">
+          <div class="section-title"><span class="dot"></span> CLI Flags Reference</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Flag</th><th>Short</th><th>Description</th><th>Default</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>--output</td><td>-o</td><td>Custom filename</td><td>auto-generated</td></tr>
+                <tr><td>--size</td><td>-s</td><td>512, 1K, 2K, 4K</td><td>1K</td></tr>
+                <tr><td>--aspect</td><td>-a</td><td>Aspect ratio (e.g. 16:9)</td><td>1:1</td></tr>
+                <tr><td>--model</td><td>-m</td><td>flash or pro</td><td>flash</td></tr>
+                <tr><td>--dir</td><td>-d</td><td>Output directory</td><td>cwd</td></tr>
+                <tr><td>--ref</td><td>-r</td><td>Reference image (repeatable)</td><td>none</td></tr>
+                <tr><td>--transparent</td><td>-t</td><td>Enable green screen removal</td><td>false</td></tr>
+                <tr><td>--api-key</td><td></td><td>Gemini API key override</td><td>env/file</td></tr>
+                <tr><td>--costs</td><td></td><td>Show spending summary</td><td></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== PROMPT DATABASE ======
+    const prompts = [
+      // === PHOTOREALISTIC ===
+      {
+        category: "photorealistic",
+        title: "Studio Portrait — Cinematic Headshot",
+        prompt: "Ultra realistic studio portrait of a young woman with curly dark hair, neutral expression, standing in front of a soft grey backdrop. Shot on 85mm f/1.8 lens with shallow depth of field, soft natural fill light with strong golden rim light, high dynamic range, calibrated color grading with perfectly accurate skin tones, 8K resolution.",
+        source: "Kimi AI / Social Media",
+        aesthetic: "Photorealistic"
+      },
+      {
+        category: "photorealistic",
+        title: "Cinematic Fisherman Portrait",
+        prompt: "Close-up portrait of an elderly fisherman standing by the sea during a windy afternoon. Water droplets on his weathered jacket, deep wrinkles telling a lifetime of stories. Shot on Kodak Portra 400 film, 50mm lens, natural overcast lighting with dramatic clouds behind. Photojournalistic style, raw emotion.",
+        source: "AIxploria / Twitter",
+        aesthetic: "Photorealistic"
+      },
+      {
+        category: "photorealistic",
+        title: "Character Consistency Seed",
+        prompt: "Portrait of a 35-year-old man with short black hair, trimmed beard, small scar above his right eyebrow, warm brown eyes, wearing a navy henley shirt. Neutral expression, studio lighting against medium grey background. This is a character reference — maintain exact facial features in all subsequent generations.",
+        source: "Kimi AI Guide",
+        aesthetic: "Photorealistic"
+      },
+      {
+        category: "photorealistic",
+        title: "2000s Mirror Selfie Aesthetic",
+        prompt: "Early-2000s digital camera mirror selfie of a young person in a dimly lit bathroom. Flash reflection visible in the mirror, slight motion blur, low megapixel grain, timestamp in bottom-right corner reading '02.15.2003'. Wearing vintage band tee, chunky silver jewelry. Authentic Y2K nostalgia.",
+        source: "Twitter/X Trending",
+        aesthetic: "Photorealistic"
+      },
+      {
+        category: "photorealistic",
+        title: "1990s Film Photography Portrait",
+        prompt: "Portrait shot in the style of 1990s film photography — built-in flash creating harsh shadows, slightly overexposed skin tones, warm tungsten color cast. Subject wearing oversized denim jacket, sitting at a Formica diner counter. Kodak Gold 200 film grain, red-eye effect subtly visible. Authentic analog imperfection.",
+        source: "Reddit r/StableDiffusion",
+        aesthetic: "Photorealistic"
+      },
+      {
+        category: "photorealistic",
+        title: "Hyper-Real Crowd Composition",
+        prompt: "Photorealistic wide shot of a bustling Tokyo crossing at night during rain. Hundreds of people with umbrellas, neon reflections on wet asphalt, long exposure light trails from taxis. Shot on Sony A7R V, 24mm f/2.8, ISO 3200, high dynamic range. Every face uniquely detailed, volumetric fog from steam vents.",
+        source: "awesome-nanobanana-pro",
+        aesthetic: "Photorealistic"
+      },
+
+      // === ANIME ===
+      {
+        category: "anime",
+        title: "Neon Hacker — Anime Character",
+        prompt: "Full-body anime illustration of a young female hacker in a neon-lit cyberpunk city. She has short electric blue hair with glowing circuitry patterns, oversized holographic visor, cropped bomber jacket with LED trim, and fingerless gloves typing on a floating holographic keyboard. Dramatic backlighting in magenta and cyan, Akira-inspired urban decay background.",
+        source: "AIxploria Prompt List",
+        aesthetic: "Anime"
+      },
+      {
+        category: "anime",
+        title: "Studio Ghibli Countryside",
+        prompt: "A peaceful countryside scene in the style of Studio Ghibli — rolling green hills with wildflowers, a small wooden cottage with smoke from the chimney, a child running through tall grass chasing butterflies. Soft watercolor sky with cumulus clouds, warm golden afternoon light. Hand-painted feel with visible brushstrokes, Miyazaki-inspired natural beauty.",
+        source: "Twitter/X Trending",
+        aesthetic: "Anime"
+      },
+      {
+        category: "anime",
+        title: "Anime Hyperrealistic Fusion",
+        prompt: "A young anime-style character rendered with hyperrealistic detail — large expressive eyes with individually rendered iris fibers, impossibly smooth porcelain skin with subtle subsurface scattering, hair strands catching light with photorealistic refraction. Cherry blossom petals falling in slow motion, cinematic depth of field. Blend of 2D anime proportions with 3D photorealism.",
+        source: "awesome-nanobanana-pro",
+        aesthetic: "Anime"
+      },
+      {
+        category: "anime",
+        title: "Mecha Pilot — Action Scene",
+        prompt: "Dynamic action shot of a mecha pilot inside a cockpit during combat. Multiple holographic HUD displays showing damage reports, the pilot gripping dual control sticks with determination. Through the cracked windshield, enemy mechs approach in a dust storm. Gundam-inspired mechanical design, dramatic speed lines, cel-shaded with intense lighting contrast.",
+        source: "Social Media / DeviantArt",
+        aesthetic: "Anime"
+      },
+
+      // === CYBERPUNK ===
+      {
+        category: "cyberpunk",
+        title: "Cyberpunk Alley — Cinematic",
+        prompt: "A lone figure walking through a narrow cyberpunk alley in a rain-drenched megacity at 2AM. Towering holographic billboards in Japanese and Korean text, neon pink and electric blue reflections on wet pavement, steam rising from underground vents. Flying vehicles visible between skyscrapers above. Shot from low angle with 35mm lens, Blade Runner 2049 cinematography, anamorphic lens flare.",
+        source: "Kimi AI Guide",
+        aesthetic: "Cyberpunk"
+      },
+      {
+        category: "cyberpunk",
+        title: "Cyberpunk Street Market",
+        prompt: "Overhead view of an illegal cyberpunk street market under a highway overpass. Vendors selling bootleg cyberware from fold-out tables, holographic price tags floating above merchandise, a robot chef operating a ramen stall with six mechanical arms. Diverse crowd of augmented humans, some with glowing cybernetic eyes. Heavy rain, puddles reflecting the carnival of lights.",
+        source: "Reddit Prompt Collection",
+        aesthetic: "Cyberpunk"
+      },
+      {
+        category: "cyberpunk",
+        title: "Neon Corporate Tower",
+        prompt: "Exterior establishing shot of a massive corporate megastructure piercing through clouds, its surface covered in animated LED panels displaying stock tickers and propaganda. Flying police drones circling the upper floors, searchlights cutting through smog. At ground level, protestors with holographic signs. Cyberpunk noir atmosphere, Syd Mead-inspired architecture.",
+        source: "Twitter/X Art Community",
+        aesthetic: "Cyberpunk"
+      },
+
+      // === PRODUCT ===
+      {
+        category: "product",
+        title: "Minimal Product Photography",
+        prompt: "Elegant perfume bottle placed on a polished stone podium, floating water droplets suspended in mid-air around it, pastel gradient background transitioning from blush pink to soft lavender. Three-point studio lighting — key light from upper left creating defined highlights on glass, fill light softening shadows, rim light separating product from background. Shot for luxury brand e-commerce.",
+        source: "AIxploria Prompt List",
+        aesthetic: "Product"
+      },
+      {
+        category: "product",
+        title: "Flat Lay E-Commerce",
+        prompt: "Top-down flat lay of skincare products arranged on a beige linen surface. Soft morning light from the upper right casting gentle shadows. Products include a serum bottle, moisturizer jar, and face mist — all with minimalist white labels. Sprigs of eucalyptus and dried lavender as props. Clean, editorial, Aesop-inspired aesthetic.",
+        source: "Social Media Best Of",
+        aesthetic: "Product"
+      },
+      {
+        category: "product",
+        title: "Amazon-Style Packshot",
+        prompt: "Single product photo of a matte black wireless headphone on pure white background (#FFFFFF). No shadows, no reflections, perfectly centered. Product rotated 15 degrees showing both ear cup and headband. Focus stacked for edge-to-edge sharpness. Amazon listing compliant — isolated product, no lifestyle elements, commercial packshot standard.",
+        source: "E-Commerce Guide",
+        aesthetic: "Product"
+      },
+      {
+        category: "product",
+        title: "Sneaker Hero Shot",
+        prompt: "Dynamic sneaker hero shot — a single running shoe floating at a dramatic angle against a deep charcoal background. Exploded view with sole, midsole, and upper slightly separated to show construction layers. Particle effects of colored dust bursting from impact point. Studio strobe lighting creating razor-sharp highlights on material textures. Nike campaign style.",
+        source: "Twitter/X Trending",
+        aesthetic: "Product"
+      },
+
+      // === WATERCOLOR ===
+      {
+        category: "watercolor",
+        title: "Mountain Lake Sunrise",
+        prompt: "Soft watercolor painting of a mountain lake at sunrise. Mist floating above the calm water surface, pine trees as dark silhouettes along the shore, mountains fading into atmospheric perspective. Wet-on-wet technique with colors bleeding naturally — rose gold sky bleeding into cerulean blue water. Visible paper texture, deliberate white space left unpainted. Traditional watercolor aesthetic.",
+        source: "Kimi AI Guide",
+        aesthetic: "Watercolor"
+      },
+      {
+        category: "watercolor",
+        title: "Botanical Illustration",
+        prompt: "Detailed botanical watercolor illustration of a blooming peony, scientific illustration style. Precise petal structure with color gradients from deep magenta center to pale pink edges. Visible pencil guidelines beneath translucent washes. Companion elements: a cross-section of the stem, seed pod detail, and handwritten Latin name 'Paeonia lactiflora' in iron gall ink. On aged cream paper with deckled edges.",
+        source: "Art Community Prompts",
+        aesthetic: "Watercolor"
+      },
+      {
+        category: "watercolor",
+        title: "Urban Sketch Watercolor",
+        prompt: "Loose urban sketch watercolor of a Parisian cafe corner. Quick confident ink lines defining the architecture, with selective watercolor washes — warm ochre for stone walls, cobalt blue for window shutters, burnt sienna for awnings. Figures suggested with just a few brushstrokes. Splatter marks and drips left intentionally. Moleskine sketchbook aesthetic, travel journal style.",
+        source: "Reddit Art Prompts",
+        aesthetic: "Watercolor"
+      },
+
+      // === FANTASY ===
+      {
+        category: "fantasy",
+        title: "Desert Treecity — Concept Art",
+        prompt: "Cinematic concept art of a futuristic desert city built around a giant ancient tree, its roots forming natural archways and bridges between sandstone buildings. Bioluminescent moss growing on the bark creates natural lighting at dusk. Flying creatures resembling manta rays circle the canopy. Caravans approaching on a desert road. Epic scale with tiny human figures for reference. Matte painting quality.",
+        source: "AIxploria Prompt List",
+        aesthetic: "Fantasy"
+      },
+      {
+        category: "fantasy",
+        title: "Dragon's Library",
+        prompt: "Interior of an ancient dragon's personal library carved inside a mountain. Towering shelves of scrolls and leather-bound tomes reaching hundreds of feet high, accessible by floating magical platforms. A massive dragon curled around the central reading pillar, wearing golden spectacles, reading a tiny book. Warm candlelight from thousands of floating candles. Dust motes in light shafts from crystal skylights.",
+        source: "Fantasy Art Community",
+        aesthetic: "Fantasy"
+      },
+      {
+        category: "fantasy",
+        title: "Enchanted Forest Portal",
+        prompt: "A glowing magical portal nestled between two ancient oak trees in an enchanted forest. The portal surface ripples like liquid mercury, reflecting a different world — a floating city in clouds. Fireflies and magical particles spiral around the frame. Thick moss, mushrooms with bioluminescent caps, and ferns surround the base. Twilight atmosphere with god rays filtering through the canopy.",
+        source: "DeviantArt Trending",
+        aesthetic: "Fantasy"
+      },
+
+      // === TYPOGRAPHY ===
+      {
+        category: "typography",
+        title: "Coffee Shop Menu Board",
+        prompt: "A coffee shop chalk menu board with the text 'COLD BREW $5 | LATTE $6 | MATCHA $7' written in bold sans-serif white chalk lettering. Decorative coffee bean illustrations in the corners. Matte black chalkboard background with subtle chalk dust texture. Typography-focused composition, clearly legible text, hand-lettered aesthetic with consistent baseline. Warm cafe lighting.",
+        source: "Kimi AI Guide",
+        aesthetic: "Typography"
+      },
+      {
+        category: "typography",
+        title: "Motivational Poster Typography",
+        prompt: "Minimalist motivational poster with the text 'BUILD SOMETHING BEAUTIFUL' in bold geometric sans-serif font, white on deep navy background. Text stacked vertically with decreasing font sizes. Subtle gradient from navy to midnight blue. Clean vector aesthetic, Swiss design influence, generous whitespace. Print-ready at 24x36 inches, typography as the sole visual element.",
+        source: "Design Community",
+        aesthetic: "Typography"
+      },
+      {
+        category: "typography",
+        title: "Neon Sign Typography",
+        prompt: "Photorealistic neon sign reading 'OPEN LATE' mounted on a dark brick wall. Each letter is a separate glass tube filled with noble gas — the 'O' and 'L' in warm pink neon, remaining letters in cool blue. Visible mounting brackets, electrical wiring, and subtle gas glow extending beyond the tubes. Slight flicker captured as motion blur on the 'A'. Shot at f/2.8 with bokeh in background.",
+        source: "Typography Prompts Collection",
+        aesthetic: "Typography"
+      },
+
+      // === ARCHITECTURE ===
+      {
+        category: "architecture",
+        title: "Japanese Ramen Restaurant Interior",
+        prompt: "Interior view of a small Japanese ramen restaurant with an 8-seat wooden counter. Hanging paper lanterns casting warm amber light, steam rising from bowls. Detailed texture on the aged wooden surfaces — knife marks on the cutting board, oil patina on the counter. Through the window, a rainy Tokyo side street is visible. Architectural photography style, 24mm tilt-shift lens correcting verticals.",
+        source: "AIxploria Prompt List",
+        aesthetic: "Architecture"
+      },
+      {
+        category: "architecture",
+        title: "Brutalist Library",
+        prompt: "Exterior photograph of a massive brutalist concrete library building at golden hour. Raw exposed concrete with board-formed texture, geometric windows creating shadow patterns. Reflecting pool in the foreground mirroring the structure. A single person walking up the wide steps provides scale. Shot on large format 4x5 camera, Ektar 100 film, perfectly corrected perspective. Tadao Ando meets Louis Kahn.",
+        source: "Architecture Prompts",
+        aesthetic: "Architecture"
+      },
+      {
+        category: "architecture",
+        title: "Scandinavian Cabin",
+        prompt: "A-frame Scandinavian cabin nestled in a Norwegian fjord landscape during winter twilight. Floor-to-ceiling glass front revealing a warm interior with a fireplace. Snow on the angular roof, pine trees heavy with frost. Northern lights faintly visible in the deep blue sky. Architectural visualization quality, warm interior light contrasting cool exterior tones. Drone perspective from 30 feet up.",
+        source: "Design Community",
+        aesthetic: "Architecture"
+      },
+
+      // === PIXEL ART ===
+      {
+        category: "pixel",
+        title: "RPG Character Sprite Sheet",
+        prompt: "16-bit pixel art sprite sheet of a knight character in classic RPG style. 32x32 pixel resolution, 16-color palette limited to earthy tones and metallic highlights. Four directional walking animations (front, back, left, right) with 4 frames each. Attack animation sequence of 6 frames showing sword slash. Clean pixel edges, no anti-aliasing, NES/SNES era aesthetic.",
+        source: "Kimi AI Guide",
+        aesthetic: "Pixel Art"
+      },
+      {
+        category: "pixel",
+        title: "Pixel Art City Scene",
+        prompt: "Detailed isometric pixel art of a small city block — 128x128 pixels, 32-color palette. Buildings include a pizza shop with a neon sign, a bookstore, and an apartment above. Tiny pixel characters walking on the sidewalk, a pixel car parked at the curb. Day-night cycle showing warm interior lights. Game Boy Advance era aesthetic, dithering for gradients.",
+        source: "Game Dev Community",
+        aesthetic: "Pixel Art"
+      },
+
+      // === EDITORIAL ===
+      {
+        category: "editorial",
+        title: "Fashion Editorial — High Contrast",
+        prompt: "High-fashion editorial photograph — a model in a sculptural red gown standing in an empty white gallery space. Dramatic side lighting creating bold shadows on the floor. The dress has architectural pleating resembling origami. Model poses with one arm extended, creating a geometric silhouette. Shot on Hasselblad H6D, beauty dish from camera right, 80mm lens. Vogue Italia aesthetic.",
+        source: "Fashion Photography Prompts",
+        aesthetic: "Editorial"
+      },
+      {
+        category: "editorial",
+        title: "Victoria's Secret Style",
+        prompt: "Glamorous beauty editorial in the style of classic Victoria's Secret campaign photography. Model with flowing hair caught by wind machine, warm golden backlighting creating a halo effect, subtle lens flare. Dewy skin with highlight on cheekbones, natural makeup palette. Shot on 70-200mm at f/2.8, creamy bokeh background. Studio setting with warm-toned fabric backdrop. Luxury, sensuality, elegance.",
+        source: "awesome-nanobanana-pro",
+        aesthetic: "Editorial"
+      },
+
+      // === CONCEPT ART ===
+      {
+        category: "concept",
+        title: "Underwater Civilization",
+        prompt: "Concept art for an underwater civilization built inside a massive air bubble at the bottom of the ocean. Bio-luminescent architecture using coral and shell structures, transparent walkways with fish swimming beneath. Citizens in sleek diving suits with built-in gill systems. Central government building shaped like a nautilus shell. Volumetric light from bioluminescent jellyfish street lamps. James Cameron meets Moebius aesthetic.",
+        source: "Concept Art Community",
+        aesthetic: "Concept Art"
+      },
+      {
+        category: "concept",
+        title: "Post-Apocalyptic Train Station",
+        prompt: "Concept art of an abandoned grand train station reclaimed by nature 200 years after collapse. The vaulted glass ceiling is shattered, letting in shafts of sunlight and rain. Massive trees grow through the platform, their roots wrapping around rusted locomotives. A small settlement of survivors has built wooden shelters in the upper galleries. Vines hang like curtains. Scale reference: a deer drinking from a puddle on the tracks.",
+        source: "Art Station Trending",
+        aesthetic: "Concept Art"
+      },
+
+      // === FOOD ===
+      {
+        category: "food",
+        title: "Fine Dining Plated Dessert",
+        prompt: "A meticulously plated dessert photographed for a Michelin-starred restaurant — chocolate sphere with gold leaf, sitting on a mirror of raspberry coulis, micro-herbs arranged with tweezers. Dark slate plate on a dark wood surface. Single directional spot light from upper left creating defined shadows and highlights. Macro lens showing individual sugar crystals. Food photography for Instagram, shot on 100mm macro at f/4.",
+        source: "Kimi AI Guide",
+        aesthetic: "Food"
+      },
+      {
+        category: "food",
+        title: "Street Food — Overhead",
+        prompt: "Overhead food photography of a spread of Mexican street tacos on butcher paper. Al pastor with pineapple, carnitas with pickled onion, and fish tacos with cabbage slaw. Scattered cilantro, lime wedges, and charred chili peppers. Hands reaching in to grab tacos, cold beer bottles sweating. Rustic outdoor lighting, slightly messy and authentic. Shot on 35mm, vibrant colors, editorial food styling.",
+        source: "Food Photography Prompts",
+        aesthetic: "Food"
+      },
+      {
+        category: "food",
+        title: "Coffee Art Macro",
+        prompt: "Extreme macro photograph of latte art in a ceramic cup — a perfectly poured rosetta pattern in milk foam on espresso. Individual micro-bubbles visible in the foam, the crema creating a golden ring at the edges. Shot from directly above, f/2.8, focus stacked. Warm cafe lighting reflecting off the liquid surface. The cup sits on a wooden saucer with a small biscotti.",
+        source: "Social Media Trending",
+        aesthetic: "Food"
+      },
+
+      // === BRANDING ===
+      {
+        category: "branding",
+        title: "Logo on Merch Mockup",
+        prompt: "Close-up of a black cotton t-shirt hanging on a wooden hanger against a white wall. Embroidered white minimalist logo of a mountain peak with two lines beneath it. Visible thread texture in the embroidery, natural fabric wrinkles. Soft window light from the left. Product mockup for a direct-to-consumer outdoor brand. Shot on 50mm at f/4, clean and minimal.",
+        source: "AIxploria Prompt List",
+        aesthetic: "Branding"
+      },
+      {
+        category: "branding",
+        title: "Packaging Mockup — Chocolate Bar",
+        prompt: "Clean packaging mockup of a premium chocolate bar wrapper lying flat on a solid dusty rose background. The wrapper design features geometric art deco patterns in gold foil on matte navy. One corner peeled back revealing the chocolate underneath. Top-down photography, even studio lighting, no harsh shadows. Luxury confectionery branding, the text 'MAISON NOIR 72% CACAO' clearly legible in gold serif font.",
+        source: "Design Inspiration",
+        aesthetic: "Branding"
+      },
+      {
+        category: "branding",
+        title: "Billboard Mockup — Urban Night",
+        prompt: "Outdoor billboard mockup on a city street at night. The billboard displays a minimalist ad — a single red apple floating on a black background with the text 'THINK DIFFERENT' in white Helvetica. Street-level perspective looking up at the billboard, surrounding buildings with lit windows creating urban context. Light rain adding reflections on the street below. Advertising photography.",
+        source: "Marketing Prompts",
+        aesthetic: "Branding"
+      },
+
+      // === UI/UX ===
+      {
+        category: "uiux",
+        title: "Mobile App UI Mockup",
+        prompt: "UI mockup of a fitness tracking mobile app displayed on an iPhone 16 Pro. The screen shows a dark-mode dashboard with a circular progress ring (73% complete), weekly activity chart in gradient purple-to-blue, and three stat cards for steps, calories, and heart rate. Clean typography in SF Pro Display. The phone is floating at a slight angle on a gradient background, subtle shadow beneath.",
+        source: "Kimi AI Guide",
+        aesthetic: "UI/UX"
+      },
+      {
+        category: "uiux",
+        title: "Dashboard Web App",
+        prompt: "Web application dashboard UI for an analytics platform, shown in a browser frame on a MacBook Pro screen. Dark theme with a sidebar navigation (icons + labels), main content area showing a real-time line chart, donut chart for traffic sources, and a data table with pagination. Color scheme: dark navy background (#0f172a), accent purple (#8b5cf6), success green (#22c55e). Clean, modern SaaS aesthetic.",
+        source: "UI Design Community",
+        aesthetic: "UI/UX"
+      },
+
+      // === RETRO ===
+      {
+        category: "retro",
+        title: "VHS Aesthetic — Home Video",
+        prompt: "A frame from a 1988 home video shot on VHS camcorder. A family birthday party in a wood-paneled living room. Tracking lines at the top and bottom of the frame, slightly desaturated colors with boosted reds, date stamp reading 'AUG 14 1988' in the corner. Slight scan-line texture, analog noise, warm tungsten lighting from ceiling fixture. Authentic VHS degradation and color bleeding.",
+        source: "Retro Aesthetic Community",
+        aesthetic: "Retro"
+      },
+      {
+        category: "retro",
+        title: "70s Sci-Fi Book Cover",
+        prompt: "A 1970s science fiction paperback book cover illustration. A chrome rocket ship approaching a ringed planet with two moons, a lone astronaut in a bulky orange spacesuit standing on an alien landscape in the foreground. Airbrushed gradient sky from deep purple to orange. The title 'ECHOES OF CENTAURI' in metallic embossed Futura Bold at the top. Bantam Books era aesthetic, slight yellowing of paper.",
+        source: "Retro Design Prompts",
+        aesthetic: "Retro"
+      },
+      {
+        category: "retro",
+        title: "Synthwave Album Art",
+        prompt: "Synthwave album cover artwork — a chrome DeLorean driving on a neon grid road stretching to the horizon. A massive retrowave sun setting behind palm tree silhouettes, horizontal scan lines across the sky. Colors: hot pink, electric purple, cyan accents. Chrome text 'MIDNIGHT DRIVE' in 80s chrome lettering with horizontal line through the middle. Grid reflections on the car. Full synthwave/outrun aesthetic.",
+        source: "Music Art Community",
+        aesthetic: "Retro"
+      },
+
+      // === 3D RENDER ===
+      {
+        category: "3d",
+        title: "Isometric Room — 3D Render",
+        prompt: "Isometric 3D render of a cozy programmer's room. Desk with dual monitors showing code, mechanical keyboard with RGB backlighting, an espresso machine on a side table. Bookshelf filled with tech books and figurines. Window showing a rainy city night. Soft ambient lighting from a desk lamp and monitor glow. Clay render quality with subtle ambient occlusion. Blender/C4D aesthetic, pastel color palette.",
+        source: "3D Art Community",
+        aesthetic: "3D Render"
+      },
+      {
+        category: "3d",
+        title: "Abstract Liquid Metal",
+        prompt: "Abstract 3D render of liquid chrome metal forming an impossible organic shape, floating in a void. The surface reflects a gradient environment — warm amber on one side, cool blue on the other. Caustic light patterns cast on the ground plane. Subsurface scattering at thin edges creating a golden glow. Octane Render quality, 8K resolution, physically accurate materials. Contemporary digital art gallery piece.",
+        source: "Digital Art Trending",
+        aesthetic: "3D Render"
+      },
+      {
+        category: "3d",
+        title: "Miniature Diorama",
+        prompt: "Tilt-shift 3D render of a miniature medieval village diorama. Tiny half-timbered houses with thatched roofs, a stone bridge over a stream, miniature villagers going about their day. Extreme shallow depth of field making everything look like a scale model. Warm afternoon sunlight casting long shadows. Visible wooden base and painted edges suggesting a tabletop gaming piece. Hyper-detailed materials.",
+        source: "3D Render Community",
+        aesthetic: "3D Render"
+      }
+    ];
+
+    // ====== RENDER PROMPTS ======
+    function renderPrompts(filter = 'all', search = '') {
+      const grid = document.getElementById('promptsGrid');
+      let filtered = prompts;
+
+      if (filter !== 'all') {
+        filtered = filtered.filter(p => p.category === filter);
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(p =>
+          p.title.toLowerCase().includes(q) ||
+          p.prompt.toLowerCase().includes(q) ||
+          p.aesthetic.toLowerCase().includes(q)
+        );
+      }
+
+      grid.innerHTML = filtered.map((p, i) => `
+        <div class="prompt-card" data-category="${p.category}">
+          <span class="aesthetic-tag aes-${p.category}">${p.aesthetic}</span>
+          <div class="prompt-title">${p.title}</div>
+          <div class="prompt-text">${p.prompt}</div>
+          <div class="prompt-meta">
+            <span class="source-tag">${p.source}</span>
+            <button class="copy-btn" onclick="copyPrompt(this, ${i})">Copy</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('count-all').textContent = prompts.length;
+    }
+
+    // ====== COPY ======
+    function copyPrompt(btn, idx) {
+      const filtered = getCurrentFiltered();
+      const text = filtered[idx] ? filtered[idx].prompt : prompts[idx].prompt;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+    }
+
+    function getCurrentFiltered() {
+      const activeFilter = document.querySelector('.filter-btn.active');
+      const filter = activeFilter ? activeFilter.textContent.replace(/\d+/g, '').trim().toLowerCase() : 'all';
+      return filter === 'all' ? prompts : prompts.filter(p => p.category === filter);
+    }
+
+    // ====== FILTER ======
+    let currentFilter = 'all';
+    function setFilter(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPrompts(cat, document.getElementById('promptSearch').value);
+    }
+
+    function filterPrompts() {
+      renderPrompts(currentFilter, document.getElementById('promptSearch').value);
+    }
+
+    // ====== TABS ======
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Init
+    renderPrompts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "nano-banana-2",
+  "version": "1.0.0",
+  "description": "AI image generation CLI powered by Google Gemini Nano Banana 2. Generate, edit, and transform images from your terminal.",
+  "type": "module",
+  "bin": {
+    "nb": "./src/cli.ts",
+    "nano-banana": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "dev": "bun run src/cli.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^1.34.0"
+  },
+  "author": {
+    "name": "eli5defi"
+  },
+  "license": "MIT",
+  "keywords": [
+    "nano-banana",
+    "gemini",
+    "image-generation",
+    "ai",
+    "cli",
+    "claude-code",
+    "transparent-assets",
+    "google-ai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eli5defi/nano-banana-2"
+  }
+}

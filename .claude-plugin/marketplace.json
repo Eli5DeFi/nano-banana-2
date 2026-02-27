@@ -1,0 +1,33 @@
+{
+  "name": "nano-banana-2",
+  "owner": {
+    "name": "eli5defi",
+    "url": "https://github.com/eli5defi"
+  },
+  "metadata": {
+    "description": "AI image generation CLI and Claude Code skill powered by Google Gemini Nano Banana 2. Generate, edit, and transform images with transparent asset support, multi-resolution output, and cost tracking.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "nano-banana",
+      "source": "./plugins/nano-banana",
+      "description": "Generate AI images from text prompts using Gemini Nano Banana 2. Supports transparent assets, reference images, 512px-4K resolution, 14 aspect ratios, and Flash/Pro model selection.",
+      "version": "1.0.0",
+      "category": "creative tools",
+      "keywords": [
+        "image-generation",
+        "ai",
+        "gemini",
+        "nano-banana",
+        "transparent",
+        "sprites",
+        "product-photography",
+        "concept-art",
+        "pixel-art",
+        "google-ai",
+        "cli"
+      ]
+    }
+  ]
+}

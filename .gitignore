@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+output/
+bun.lock

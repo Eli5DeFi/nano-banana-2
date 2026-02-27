@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nano Banana 2 — Prompt Creator</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --surface3: #22222e;
+      --border: #2a2a3a;
+      --border-focus: #f5c842;
+      --yellow: #f5c842;
+      --yellow-dim: #c9a535;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --orange: #fb923c;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --text: #e4e4e7;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header {
+      padding: 28px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .logo h1 {
+      font-size: 22px; font-weight: 700;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .logo span { font-size: 12px; color: var(--text-dim); display: block; }
+    .back-link {
+      color: var(--text-dim); font-size: 13px; text-decoration: none;
+      padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .back-link:hover { border-color: var(--yellow); color: var(--text); }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .panel-title {
+      font-size: 16px; font-weight: 700; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--yellow);
+    }
+
+    /* Input Section */
+    label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+
+    .input-group { margin-bottom: 18px; }
+
+    textarea, input[type="text"] {
+      width: 100%; padding: 12px 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px;
+      font-family: inherit; outline: none; resize: vertical;
+      transition: border-color 0.2s;
+    }
+    textarea:focus, input[type="text"]:focus { border-color: var(--yellow); }
+    textarea { min-height: 90px; }
+
+    .hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Select Grid */
+    .select-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .select-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    select {
+      width: 100%; padding: 10px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      outline: none; cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    select:focus { border-color: var(--yellow); }
+
+    /* Chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text-dim); transition: all 0.15s; user-select: none;
+    }
+    .chip:hover { border-color: var(--yellow); color: var(--text); }
+    .chip.active { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 600; }
+
+    /* Toggle Row */
+    .toggle-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    .toggle {
+      position: relative; width: 40px; height: 22px;
+      background: var(--surface2); border-radius: 11px; cursor: pointer;
+      border: 1px solid var(--border); transition: all 0.2s;
+    }
+    .toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-muted); transition: all 0.2s;
+    }
+    .toggle.on { background: var(--yellow); border-color: var(--yellow); }
+    .toggle.on::after { left: 20px; background: #000; }
+    .toggle-label { font-size: 13px; color: var(--text-dim); }
+
+    /* Generate Button */
+    .generate-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      border: none; border-radius: 10px; color: #000;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; margin-top: 8px;
+    }
+    .generate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,200,66,0.3); }
+    .generate-btn:active { transform: translateY(0); }
+
+    /* Output Section */
+    .output-block {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; margin-bottom: 14px;
+      position: relative; min-height: 80px;
+    }
+    .output-block.highlight { border-color: var(--yellow); }
+    .output-label {
+      font-size: 11px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .output-text {
+      font-size: 14px; color: var(--text); line-height: 1.7;
+      white-space: pre-wrap; word-wrap: break-word;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .output-text.placeholder { color: var(--text-muted); font-style: italic; font-family: inherit; }
+
+    .copy-btn {
+      position: absolute; top: 12px; right: 12px;
+      padding: 5px 12px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-dim); font-size: 11px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--yellow); color: #000; border-color: var(--yellow); }
+    .copy-btn.copied { background: var(--green); color: #000; border-color: var(--green); }
+
+    /* Breakdown */
+    .breakdown { margin-top: 14px; }
+    .breakdown-item {
+      display: flex; gap: 10px; padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .breakdown-item:last-child { border-bottom: none; }
+    .breakdown-key {
+      min-width: 100px; color: var(--text-muted); font-weight: 500;
+    }
+    .breakdown-val { color: var(--text-dim); }
+
+    /* Cost Pill */
+    .cost-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 8px; padding: 8px 14px; margin-top: 10px;
+      font-size: 13px; color: var(--green);
+    }
+    .cost-pill .price { font-weight: 700; font-size: 16px; }
+
+    /* History */
+    .history-list { max-height: 300px; overflow-y: auto; }
+    .history-item {
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background 0.15s; font-size: 13px;
+    }
+    .history-item:hover { background: var(--surface2); }
+    .history-item .h-prompt { color: var(--text); font-weight: 500; margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-item .h-meta { color: var(--text-muted); font-size: 11px; }
+    .history-empty { color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px; }
+
+    /* Examples */
+    .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .example-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; cursor: pointer;
+      transition: all 0.15s; font-size: 12px;
+    }
+    .example-card:hover { border-color: var(--yellow); transform: translateY(-1px); }
+    .example-card .ex-label { color: var(--yellow); font-weight: 600; margin-bottom: 2px; }
+    .example-card .ex-text { color: var(--text-dim); }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon">&#127820;</div>
+        <div>
+          <h1>Prompt Creator</h1>
+          <span>Transform rough ideas into NB2-optimized prompts</span>
+        </div>
+      </div>
+      <a href="index.html" class="back-link">&larr; Dashboard</a>
+    </header>
+
+    <div class="layout">
+      <!-- ====== LEFT: INPUT ====== -->
+      <div>
+        <div class="panel">
+          <div class="panel-title"><span class="dot"></span> Your Idea</div>
+
+          <div class="input-group">
+            <label>What do you want to generate?</label>
+            <textarea id="rawInput" placeholder="Describe your idea in plain language...&#10;&#10;e.g. &quot;a samurai in the rain&quot; or &quot;product shot of sneakers&quot; or &quot;cute pixel art cat&quot;"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Aesthetic Category</label>
+            <div class="chips" id="aestheticChips">
+              <div class="chip active" data-v="auto">Auto-Detect</div>
+              <div class="chip" data-v="photorealistic">Photorealistic</div>
+              <div class="chip" data-v="anime">Anime</div>
+              <div class="chip" data-v="cyberpunk">Cyberpunk</div>
+              <div class="chip" data-v="product">Product</div>
+              <div class="chip" data-v="watercolor">Watercolor</div>
+              <div class="chip" data-v="fantasy">Fantasy</div>
+              <div class="chip" data-v="typography">Typography</div>
+              <div class="chip" data-v="pixel">Pixel Art</div>
+              <div class="chip" data-v="editorial">Editorial</div>
+              <div class="chip" data-v="concept">Concept Art</div>
+              <div class="chip" data-v="food">Food</div>
+              <div class="chip" data-v="branding">Branding</div>
+              <div class="chip" data-v="architecture">Architecture</div>
+              <div class="chip" data-v="uiux">UI/UX</div>
+              <div class="chip" data-v="retro">Retro</div>
+              <div class="chip" data-v="3d">3D Render</div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Additional Context (optional)</label>
+            <input type="text" id="contextInput" placeholder="e.g. &quot;for Instagram&quot;, &quot;game asset&quot;, &quot;hero section&quot;">
+            <div class="hint">Purpose helps the model make better artistic decisions</div>
+          </div>
+
+          <div class="select-grid">
+            <div class="input-group">
+              <label>Resolution</label>
+              <select id="sizeSelect">
+                <option value="1K" selected>1K (default)</option>
+                <option value="512">512px (quick/pixel)</option>
+                <option value="2K">2K (print/text)</option>
+                <option value="4K">4K (production)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Aspect Ratio</label>
+              <select id="aspectSelect">
+                <option value="">Auto</option>
+                <option value="1:1">1:1 (Square)</option>
+                <option value="16:9">16:9 (Landscape)</option>
+                <option value="9:16">9:16 (Portrait/Story)</option>
+                <option value="4:3">4:3 (Standard)</option>
+                <option value="3:2">3:2 (Photo)</option>
+                <option value="4:5">4:5 (Instagram)</option>
+                <option value="21:9">21:9 (Ultrawide)</option>
+                <option value="3:4">3:4</option>
+                <option value="2:3">2:3</option>
+                <option value="5:4">5:4</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="select-grid">
+            <div class="input-group">
+              <label>Model</label>
+              <select id="modelSelect">
+                <option value="flash">Flash (fast, cheap)</option>
+                <option value="pro">Pro (max quality)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Mood / Lighting</label>
+              <select id="moodSelect">
+                <option value="">Auto</option>
+                <option value="golden-hour">Golden Hour</option>
+                <option value="moody-dark">Moody / Dark</option>
+                <option value="bright-clean">Bright / Clean</option>
+                <option value="neon">Neon / Vibrant</option>
+                <option value="soft-natural">Soft / Natural</option>
+                <option value="dramatic">Dramatic / Cinematic</option>
+                <option value="overcast">Overcast / Muted</option>
+                <option value="studio">Studio Lighting</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle" id="toggleTransparent" onclick="this.classList.toggle('on')"></div>
+            <span class="toggle-label">Transparent background (for sprites, stickers, logos)</span>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle" id="toggleText" onclick="this.classList.toggle('on')"></div>
+            <span class="toggle-label">Contains text in image</span>
+          </div>
+
+          <button class="generate-btn" onclick="formulatePrompt()">&#127820; Formulate NB2 Prompt</button>
+        </div>
+
+        <!-- Quick Examples -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-title"><span class="dot"></span> Quick Examples</div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('samurai')">
+              <div class="ex-label">Cyberpunk</div>
+              <div class="ex-text">samurai in the rain</div>
+            </div>
+            <div class="example-card" onclick="loadExample('sneaker')">
+              <div class="ex-label">Product</div>
+              <div class="ex-text">sneaker hero shot</div>
+            </div>
+            <div class="example-card" onclick="loadExample('cat')">
+              <div class="ex-label">Pixel Art</div>
+              <div class="ex-text">cute cat character</div>
+            </div>
+            <div class="example-card" onclick="loadExample('coffee')">
+              <div class="ex-label">Typography</div>
+              <div class="ex-text">coffee shop menu board</div>
+            </div>
+            <div class="example-card" onclick="loadExample('landscape')">
+              <div class="ex-label">Watercolor</div>
+              <div class="ex-text">mountain sunset</div>
+            </div>
+            <div class="example-card" onclick="loadExample('dragon')">
+              <div class="ex-label">Fantasy</div>
+              <div class="ex-text">dragon guarding treasure</div>
+            </div>
+            <div class="example-card" onclick="loadExample('app')">
+              <div class="ex-label">UI/UX</div>
+              <div class="ex-text">fitness app dashboard</div>
+            </div>
+            <div class="example-card" onclick="loadExample('portrait')">
+              <div class="ex-label">Editorial</div>
+              <div class="ex-text">fashion model in red gown</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== RIGHT: OUTPUT ====== -->
+      <div>
+        <div class="panel">
+          <div class="panel-title"><span class="dot"></span> Formulated Prompt</div>
+
+          <div class="output-block highlight" id="promptOutput">
+            <div class="output-label">NB2-Optimized Prompt</div>
+            <div class="output-text placeholder" id="promptText">Your formulated prompt will appear here...</div>
+            <button class="copy-btn" id="copyPrompt" onclick="copyText('promptText', 'copyPrompt')" style="display:none">Copy</button>
+          </div>
+
+          <div class="output-block" id="cliOutput">
+            <div class="output-label">CLI Command</div>
+            <div class="output-text placeholder" id="cliText">nb "..." command will appear here...</div>
+            <button class="copy-btn" id="copyCli" onclick="copyText('cliText', 'copyCli')" style="display:none">Copy</button>
+          </div>
+
+          <div id="breakdownSection" style="display:none">
+            <div class="output-label" style="margin: 14px 0 6px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Prompt Breakdown</div>
+            <div class="breakdown" id="breakdown"></div>
+            <div class="cost-pill" id="costPill"></div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="panel" style="margin-top: 16px;">
+          <div class="panel-title"><span class="dot"></span> History</div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">No prompts created yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== STATE ======
+    let selectedAesthetic = 'auto';
+    let history = [];
+
+    // ====== CHIP SELECTION ======
+    document.getElementById('aestheticChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      document.querySelectorAll('#aestheticChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selectedAesthetic = chip.dataset.v;
+    });
+
+    // ====== KNOWLEDGE BASE ======
+
+    const aestheticKeywords = {
+      photorealistic: ['photo', 'realistic', 'portrait', 'headshot', 'face', 'person', 'people', 'selfie', 'film', 'camera'],
+      anime: ['anime', 'manga', 'ghibli', 'cel', 'waifu', 'kawaii', 'chibi', 'otaku', 'naruto', 'mecha'],
+      cyberpunk: ['cyber', 'neon', 'futur', 'dystop', 'blade runner', 'hologram', 'hacker', 'samurai', 'synth', 'matrix'],
+      product: ['product', 'sneaker', 'shoe', 'headphone', 'watch', 'perfume', 'bottle', 'packag', 'mockup', 'ecommerce', 'amazon'],
+      watercolor: ['watercolor', 'watercolour', 'paint', 'brush', 'traditio', 'botanical', 'sketch'],
+      fantasy: ['dragon', 'magic', 'wizard', 'castle', 'elf', 'dwarf', 'enchant', 'myth', 'portal', 'spell', 'forest'],
+      typography: ['text', 'poster', 'sign', 'menu', 'lettering', 'font', 'neon sign', 'billboard', 'quote', 'word'],
+      pixel: ['pixel', '8-bit', '16-bit', 'retro game', 'sprite', 'rpg', 'nes', 'snes', 'gameboy'],
+      editorial: ['fashion', 'model', 'vogue', 'editorial', 'runway', 'glamour', 'beauty', 'haute'],
+      concept: ['concept art', 'matte paint', 'worldbuild', 'sci-fi', 'alien', 'spaceship', 'underwater city'],
+      food: ['food', 'dish', 'meal', 'restaurant', 'dessert', 'coffee', 'latte', 'sushi', 'cake', 'plat'],
+      branding: ['logo', 'brand', 'merch', 't-shirt', 'packaging', 'label', 'identity', 'business card'],
+      architecture: ['building', 'interior', 'architect', 'house', 'cabin', 'room', 'kitchen', 'bathroom', 'office'],
+      uiux: ['ui', 'ux', 'app', 'dashboard', 'interface', 'screen', 'mobile', 'website', 'saas'],
+      retro: ['retro', 'vintage', 'vhs', '80s', '70s', '90s', 'synthwave', 'outrun', 'nostalg', 'cassette'],
+      '3d': ['3d', 'render', 'isometric', 'blender', 'c4d', 'octane', 'clay', 'diorama', 'chrome', 'liquid metal']
+    };
+
+    const aestheticEnhancements = {
+      photorealistic: {
+        camera: 'Shot on 85mm f/1.8 lens, shallow depth of field',
+        lighting: 'natural fill light with golden rim light',
+        quality: 'calibrated color grading with accurate skin tones, high dynamic range',
+        film: 'Kodak Portra 400 tonality'
+      },
+      anime: {
+        style: 'detailed anime illustration style',
+        rendering: 'clean cel-shaded rendering with vibrant colors',
+        composition: 'dynamic composition with expressive character proportions',
+        detail: 'hand-painted feel with visible brushwork'
+      },
+      cyberpunk: {
+        atmosphere: 'neon-lit atmosphere with rain-slicked surfaces reflecting pink and blue light',
+        environment: 'towering holographic billboards and flying vehicles in background',
+        camera: 'low angle 35mm lens, anamorphic lens flare',
+        reference: 'Blade Runner 2049 cinematography'
+      },
+      product: {
+        lighting: 'three-point studio lighting — key from upper left, fill softening shadows, rim light separating from background',
+        surface: 'on a polished surface with subtle reflections',
+        quality: 'focus-stacked for edge-to-edge sharpness',
+        purpose: 'commercial product photography'
+      },
+      watercolor: {
+        technique: 'wet-on-wet watercolor technique with colors bleeding naturally',
+        texture: 'visible paper texture with deliberate unpainted white space',
+        palette: 'soft translucent color washes',
+        feel: 'traditional watercolor painting aesthetic'
+      },
+      fantasy: {
+        scale: 'epic scale with tiny human figures for reference',
+        lighting: 'volumetric god rays and atmospheric perspective',
+        quality: 'matte painting quality, cinematic concept art',
+        detail: 'intricate environmental storytelling'
+      },
+      typography: {
+        text: 'clearly legible text, high contrast for readability',
+        style: 'typography-focused composition',
+        rendering: 'precise letterforms with consistent baseline',
+        quality: 'print-ready quality'
+      },
+      pixel: {
+        resolution: '32x32 pixels per tile, limited color palette',
+        style: 'clean pixel edges, no anti-aliasing',
+        era: 'SNES-era aesthetic with dithering for gradients',
+        constraint: 'strict pixel grid alignment'
+      },
+      editorial: {
+        camera: 'Hasselblad H6D, 80mm lens, beauty dish lighting',
+        style: 'high-fashion editorial with dramatic silhouette',
+        quality: 'Vogue Italia aesthetic',
+        mood: 'bold shadows and sculptural composition'
+      },
+      concept: {
+        quality: 'professional concept art, matte painting quality',
+        detail: 'environmental storytelling with scale indicators',
+        atmosphere: 'volumetric lighting and atmospheric depth',
+        reference: 'industry-standard concept art'
+      },
+      food: {
+        camera: '100mm macro lens at f/4, extreme detail',
+        lighting: 'single directional light from upper left creating defined shadows',
+        style: 'Michelin-starred restaurant presentation',
+        detail: 'individual texture visible — grains, droplets, garnish placement'
+      },
+      branding: {
+        style: 'clean brand mockup photography',
+        lighting: 'soft even studio light, no harsh shadows',
+        quality: 'commercial-grade brand identity presentation',
+        detail: 'visible material textures — thread, foil, paper stock'
+      },
+      architecture: {
+        camera: '24mm tilt-shift lens with corrected verticals',
+        lighting: 'golden hour light creating warm tones and long shadows',
+        quality: 'architectural photography, large format camera quality',
+        detail: 'precise material textures — concrete, wood grain, glass'
+      },
+      uiux: {
+        style: 'clean UI mockup on device frame',
+        design: 'modern dark-mode interface with clear hierarchy',
+        quality: 'product design presentation quality',
+        detail: 'pixel-perfect typography and spacing'
+      },
+      retro: {
+        texture: 'authentic analog artifacts — grain, scan lines, color bleeding',
+        style: 'period-accurate aesthetic with era-specific technology',
+        quality: 'convincing vintage look with appropriate degradation',
+        detail: 'era-specific typography and design language'
+      },
+      '3d': {
+        rendering: 'physically accurate materials with ambient occlusion',
+        lighting: 'studio HDRI lighting with caustic light patterns',
+        quality: 'Octane Render / Blender quality, 8K resolution',
+        style: 'clean 3D render aesthetic'
+      }
+    };
+
+    const moodEnhancements = {
+      'golden-hour': 'warm golden hour sunlight casting long amber shadows, the sky transitioning from peach to soft blue',
+      'moody-dark': 'moody low-key lighting with deep shadows and selective highlights, dark atmospheric tension',
+      'bright-clean': 'bright, clean, evenly-lit environment with soft shadows and high-key exposure',
+      'neon': 'vibrant neon lighting in electric pink, blue, and purple, with strong color reflections on surfaces',
+      'soft-natural': 'soft diffused natural light, gentle shadows, warm and inviting atmosphere',
+      'dramatic': 'dramatic cinematic lighting with strong contrast, volumetric light shafts, and deep blacks',
+      'overcast': 'overcast diffused light with muted tones, soft even illumination, contemplative mood',
+      'studio': 'professional studio three-point lighting — key light, fill light, and rim light'
+    };
+
+    // ====== AUTO-DETECT ======
+    function detectAesthetic(input) {
+      const lower = input.toLowerCase();
+      let bestMatch = 'photorealistic';
+      let bestScore = 0;
+
+      for (const [cat, keywords] of Object.entries(aestheticKeywords)) {
+        let score = 0;
+        for (const kw of keywords) {
+          if (lower.includes(kw)) score++;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = cat;
+        }
+      }
+      return bestMatch;
+    }
+
+    // ====== FORMULATE ======
+    function formulatePrompt() {
+      const raw = document.getElementById('rawInput').value.trim();
+      if (!raw) {
+        alert('Please enter your idea first.');
+        return;
+      }
+
+      const context = document.getElementById('contextInput').value.trim();
+      const size = document.getElementById('sizeSelect').value;
+      const aspect = document.getElementById('aspectSelect').value;
+      const model = document.getElementById('modelSelect').value;
+      const mood = document.getElementById('moodSelect').value;
+      const transparent = document.getElementById('toggleTransparent').classList.contains('on');
+      const hasText = document.getElementById('toggleText').classList.contains('on');
+
+      // Detect or use selected aesthetic
+      const aesthetic = selectedAesthetic === 'auto' ? detectAesthetic(raw) : selectedAesthetic;
+      const enhancements = aestheticEnhancements[aesthetic] || aestheticEnhancements.photorealistic;
+
+      // Build the prompt
+      let parts = [];
+
+      // Core subject — expand the raw input into a sentence
+      let subject = raw;
+      // Capitalize first letter
+      subject = subject.charAt(0).toUpperCase() + subject.slice(1);
+      // If it doesn't end with punctuation, it's a fragment — build a sentence
+      if (!/[.!?]$/.test(subject)) {
+        subject = subject + '.';
+      }
+
+      parts.push(subject);
+
+      // Add aesthetic-specific enhancements
+      const enhKeys = Object.keys(enhancements);
+      // Pick the most relevant 3 enhancements
+      for (let i = 0; i < Math.min(3, enhKeys.length); i++) {
+        const val = enhancements[enhKeys[i]];
+        // Don't duplicate info already in the raw prompt
+        const words = val.split(' ').slice(0, 3).join(' ').toLowerCase();
+        if (!raw.toLowerCase().includes(words)) {
+          parts.push(val.charAt(0).toUpperCase() + val.slice(1));
+        }
+      }
+
+      // Add mood/lighting
+      if (mood && moodEnhancements[mood]) {
+        parts.push(moodEnhancements[mood].charAt(0).toUpperCase() + moodEnhancements[mood].slice(1));
+      }
+
+      // Add context/purpose
+      if (context) {
+        parts.push(`Created for ${context}`);
+      }
+
+      // Text rendering
+      if (hasText) {
+        parts.push('Typography-focused with clearly legible text, high contrast for readability. Wrap exact text in quotation marks.');
+      }
+
+      // Transparent mode
+      if (transparent) {
+        // This is handled by CLI flag, but add a note
+      }
+
+      // Join into natural flowing prompt
+      let finalPrompt = parts.join('. ').replace(/\.\./g, '.').replace(/\. \./g, '.');
+
+      // Clean up
+      finalPrompt = finalPrompt.replace(/\s+/g, ' ').trim();
+      if (!finalPrompt.endsWith('.')) finalPrompt += '.';
+
+      // Build CLI command
+      let cli = `nb "${finalPrompt}"`;
+      if (size !== '1K') cli += ` -s ${size}`;
+      if (aspect) cli += ` -a ${aspect}`;
+      if (model === 'pro') cli += ` -m pro`;
+      if (transparent) cli += ` -t`;
+
+      // Calculate cost
+      const costs = {
+        flash: { '512': 0.045, '1K': 0.067, '2K': 0.101, '4K': 0.151 },
+        pro: { '512': 0.045, '1K': 0.134, '2K': 0.201, '4K': 0.302 }
+      };
+      const cost = costs[model]?.[size] || 0.067;
+
+      // Display results
+      const promptEl = document.getElementById('promptText');
+      promptEl.textContent = finalPrompt;
+      promptEl.classList.remove('placeholder');
+      document.getElementById('copyPrompt').style.display = 'block';
+
+      const cliEl = document.getElementById('cliText');
+      cliEl.textContent = cli;
+      cliEl.classList.remove('placeholder');
+      document.getElementById('copyCli').style.display = 'block';
+
+      // Breakdown
+      const breakdownSection = document.getElementById('breakdownSection');
+      breakdownSection.style.display = 'block';
+
+      const aestheticLabels = {
+        photorealistic: 'Photorealistic', anime: 'Anime', cyberpunk: 'Cyberpunk',
+        product: 'Product Photography', watercolor: 'Watercolor', fantasy: 'Fantasy',
+        typography: 'Typography', pixel: 'Pixel Art', editorial: 'Fashion Editorial',
+        concept: 'Concept Art', food: 'Food Photography', branding: 'Branding',
+        architecture: 'Architecture', uiux: 'UI/UX Design', retro: 'Retro',
+        '3d': '3D Render'
+      };
+
+      document.getElementById('breakdown').innerHTML = `
+        <div class="breakdown-item"><span class="breakdown-key">Raw Input</span><span class="breakdown-val">${raw}</span></div>
+        <div class="breakdown-item"><span class="breakdown-key">Aesthetic</span><span class="breakdown-val">${aestheticLabels[aesthetic] || aesthetic}${selectedAesthetic === 'auto' ? ' (auto-detected)' : ''}</span></div>
+        <div class="breakdown-item"><span class="breakdown-key">Model</span><span class="breakdown-val">${model === 'pro' ? 'Pro (max quality)' : 'Flash (fast)'}</span></div>
+        <div class="breakdown-item"><span class="breakdown-key">Resolution</span><span class="breakdown-val">${size}</span></div>
+        ${aspect ? `<div class="breakdown-item"><span class="breakdown-key">Aspect Ratio</span><span class="breakdown-val">${aspect}</span></div>` : ''}
+        ${mood ? `<div class="breakdown-item"><span class="breakdown-key">Mood</span><span class="breakdown-val">${mood.replace('-', ' ')}</span></div>` : ''}
+        ${transparent ? `<div class="breakdown-item"><span class="breakdown-key">Transparent</span><span class="breakdown-val">Yes (green screen pipeline)</span></div>` : ''}
+        ${hasText ? `<div class="breakdown-item"><span class="breakdown-key">Text Render</span><span class="breakdown-val">Enabled</span></div>` : ''}
+        ${context ? `<div class="breakdown-item"><span class="breakdown-key">Purpose</span><span class="breakdown-val">${context}</span></div>` : ''}
+      `;
+
+      document.getElementById('costPill').innerHTML = `
+        Estimated cost: <span class="price">~$${cost.toFixed(3)}</span> per image
+      `;
+
+      // Add to history
+      history.unshift({
+        raw, aesthetic: aestheticLabels[aesthetic] || aesthetic,
+        prompt: finalPrompt, cli, cost, time: new Date().toLocaleTimeString()
+      });
+      renderHistory();
+    }
+
+    // ====== HISTORY ======
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      if (history.length === 0) {
+        list.innerHTML = '<div class="history-empty">No prompts created yet</div>';
+        return;
+      }
+      list.innerHTML = history.map((h, i) => `
+        <div class="history-item" onclick="loadHistory(${i})">
+          <div class="h-prompt">${h.raw}</div>
+          <div class="h-meta">${h.aesthetic} &bull; ~$${h.cost.toFixed(3)} &bull; ${h.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function loadHistory(idx) {
+      const h = history[idx];
+      const promptEl = document.getElementById('promptText');
+      promptEl.textContent = h.prompt;
+      promptEl.classList.remove('placeholder');
+      document.getElementById('copyPrompt').style.display = 'block';
+
+      const cliEl = document.getElementById('cliText');
+      cliEl.textContent = h.cli;
+      cliEl.classList.remove('placeholder');
+      document.getElementById('copyCli').style.display = 'block';
+    }
+
+    // ====== EXAMPLES ======
+    const examples = {
+      samurai: { input: 'A lone samurai standing in the rain at night', aesthetic: 'cyberpunk', context: 'cinematic wallpaper', mood: 'neon', size: '4K', aspect: '21:9' },
+      sneaker: { input: 'A single running shoe floating at a dramatic angle', aesthetic: 'product', context: 'Nike-style campaign', mood: 'studio', size: '4K', aspect: '16:9' },
+      cat: { input: 'Cute cat character with a wizard hat', aesthetic: 'pixel', context: 'game sprite', mood: '', size: '512', aspect: '1:1' },
+      coffee: { input: 'Coffee shop menu board with prices for cold brew, latte, matcha', aesthetic: 'typography', context: 'cafe interior decor', mood: 'golden-hour', size: '2K', aspect: '3:4' },
+      landscape: { input: 'Mountain sunset over a calm lake with mist', aesthetic: 'watercolor', context: 'fine art print', mood: 'golden-hour', size: '2K', aspect: '16:9' },
+      dragon: { input: 'Ancient dragon curled around treasure in a cave', aesthetic: 'fantasy', context: 'book cover illustration', mood: 'dramatic', size: '4K', aspect: '3:4' },
+      app: { input: 'Fitness tracking app dashboard showing steps, calories, heart rate', aesthetic: 'uiux', context: 'Dribbble presentation', mood: '', size: '2K', aspect: '9:16' },
+      portrait: { input: 'Fashion model in a sculptural red gown in empty white gallery', aesthetic: 'editorial', context: 'Vogue magazine spread', mood: 'dramatic', size: '4K', aspect: '3:4' }
+    };
+
+    function loadExample(key) {
+      const ex = examples[key];
+      document.getElementById('rawInput').value = ex.input;
+      document.getElementById('contextInput').value = ex.context;
+      document.getElementById('sizeSelect').value = ex.size;
+      document.getElementById('aspectSelect').value = ex.aspect;
+      document.getElementById('modelSelect').value = ex.size === '4K' ? 'pro' : 'flash';
+      document.getElementById('moodSelect').value = ex.mood;
+
+      // Set aesthetic chip
+      document.querySelectorAll('#aestheticChips .chip').forEach(c => c.classList.remove('active'));
+      const target = document.querySelector(`#aestheticChips .chip[data-v="${ex.aesthetic}"]`);
+      if (target) target.classList.add('active');
+      selectedAesthetic = ex.aesthetic;
+
+      // Auto-generate
+      formulatePrompt();
+    }
+
+    // ====== COPY ======
+    function copyText(elId, btnId) {
+      const text = document.getElementById(elId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(btnId);
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
