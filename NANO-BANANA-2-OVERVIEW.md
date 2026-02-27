@@ -129,28 +129,28 @@ POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-im
 
 ---
 
-## CLI Tool (nano-banana-2-skill)
+## CLI Tool
 
-The [kingbootoshi/nano-banana-2-skill](https://github.com/kingbootoshi/nano-banana-2-skill) provides a CLI + Claude Code plugin:
+The [eli5defi/nano-banana-2](https://github.com/eli5defi/nano-banana-2) toolkit provides a CLI, Claude Code skill, prompt dashboard, and prompt creator. Originally inspired by [kingbootoshi/nano-banana-2-skill](https://github.com/kingbootoshi/nano-banana-2-skill).
 
 ```bash
 # Basic generation
-nano-banana "your prompt"
+nb "your prompt"
 
 # With options
-nano-banana "product on marble surface" -s 4K -a 16:9 -o product-hero
+nb "product on marble surface" -s 4K -a 16:9 -o product-hero
 
 # Transparent asset
-nano-banana "game character sprite" -t -s 2K
+nb "game character sprite" -t -s 2K
 
 # With reference images
-nano-banana "similar style portrait" -r reference1.jpg -r reference2.jpg
+nb "similar style portrait" -r reference1.jpg -r reference2.jpg
 
 # Pro model
-nano-banana "complex scene" -m pro
+nb "complex scene" -m pro
 
 # Check costs
-nano-banana --costs
+nb --costs
 ```
 
 **Tech Stack:** TypeScript + Bun, requires FFmpeg + ImageMagick for transparency
