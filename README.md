@@ -186,16 +186,16 @@ The prompt formulation engine at `prompt-creator.html` transforms rough ideas in
 
 The reverse prompt tool at `reverse-prompt.html` does the opposite of prompt creation — upload any image and get an NB2-optimized prompt to recreate it:
 
-- **Image Upload** — Drag & drop or file picker (JPG, PNG, WebP)
-- **Canvas API Analysis** — Extracts dominant colors (k-means clustering), brightness, contrast, color temperature, saturation, edge density
-- **Aesthetic Auto-Detection** — Maps image properties to one of 16 NB2 aesthetics via heuristic scoring
-- **Auto-Configuration** — Sets resolution, aspect ratio, and mood/lighting from image analysis
+- **Gemini Vision AI Analysis** — Uses `gemini-2.0-flash` to identify subject, environment, lighting, camera angle, style, mood, colors, and text content
+- **Canvas API Pixel Analysis** — Extracts dominant colors (k-means clustering), brightness, contrast, color temperature, saturation, edge density
+- **Aesthetic Auto-Detection** — AI + heuristic scoring maps to one of 16 NB2 aesthetics
+- **Auto-Fill Everything** — AI populates subject description, environment, camera, mood, aesthetic, and text detection
 - **Color Palette Extraction** — 5 dominant colors with click-to-copy hex values
-- **User Refinement** — Subject description, camera angle, surface, context for precision
-- **Prompt Formulation** — Combines analysis + user input through the NB2 enhancement engine
+- **User Refinement** — Override any AI-detected field before generating
+- **Prompt Formulation** — Combines AI analysis + pixel data + user input through the NB2 enhancement engine
 - **CLI Command + Cost Estimate** — Ready-to-paste command with per-image cost
 
-All processing runs client-side in the browser — no API keys or backend required.
+Requires a free Gemini API key from [aistudio.google.com](https://aistudio.google.com) — saved in localStorage for convenience.
 
 ---
 
@@ -288,7 +288,7 @@ This project was inspired by [kingbootoshi/nano-banana-2-skill](https://github.c
 | Claude Code Skill | ✅ Skill file | ✅ Expanded skill (476 lines, 16 aesthetics) |
 | Prompt Dashboard | ❌ | ✅ 6-tab interactive dashboard with 80+ prompts |
 | Prompt Creator | ❌ | ✅ Auto-detect aesthetic + enhancement engine |
-| Reverse Prompt | ❌ | ✅ Image → prompt via Canvas API analysis |
+| Reverse Prompt | ❌ | ✅ Image → prompt via Gemini Vision AI + pixel analysis |
 | Capabilities Overview | ❌ | ✅ Full NB2 capabilities doc |
 | Live Web Demo | ❌ | ✅ Deployed on Vercel |
 | Cost Estimation UI | ❌ | ✅ In prompt creator + dashboard |

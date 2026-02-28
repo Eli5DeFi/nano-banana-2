@@ -7,3 +7,4 @@ node_modules/
 *.gif
 output/
 bun.lock
+.vercel

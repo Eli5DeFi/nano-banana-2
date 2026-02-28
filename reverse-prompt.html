@@ -94,6 +94,33 @@
       width: 8px; height: 8px; border-radius: 50%; background: var(--yellow);
     }
 
+    /* API Key Bar */
+    .api-key-bar {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 18px;
+    }
+    .api-key-bar input {
+      flex: 1; padding: 10px 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      outline: none; transition: border-color 0.2s;
+    }
+    .api-key-bar input:focus { border-color: var(--yellow); }
+    .api-key-bar input::placeholder { color: var(--text-muted); font-family: inherit; }
+    .api-key-save {
+      padding: 10px 16px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text-dim); font-size: 12px; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .api-key-save:hover { border-color: var(--yellow); color: var(--text); }
+    .api-key-save.saved { background: var(--green); color: #000; border-color: var(--green); }
+    .api-key-hint {
+      font-size: 11px; color: var(--text-muted); margin-top: -12px; margin-bottom: 14px;
+    }
+    .api-key-hint a { color: var(--yellow); text-decoration: none; }
+    .api-key-hint a:hover { text-decoration: underline; }
+
     /* Drop Zone */
     .drop-zone {
       border: 2px dashed var(--border);
@@ -135,6 +162,33 @@
     .clear-image:hover { background: var(--red); color: #fff; border-color: var(--red); }
     .drop-zone.has-image .clear-image { display: flex; }
 
+    /* AI Status */
+    .ai-status {
+      padding: 12px 16px; border-radius: 10px; margin-bottom: 18px;
+      font-size: 13px; display: none; align-items: center; gap: 10px;
+    }
+    .ai-status.analyzing {
+      display: flex;
+      background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.2);
+      color: var(--blue);
+    }
+    .ai-status.success {
+      display: flex;
+      background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2);
+      color: var(--green);
+    }
+    .ai-status.error {
+      display: flex;
+      background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2);
+      color: var(--red);
+    }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid transparent;
+      border-top-color: currentColor; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Analysis Results */
     .analysis-panel {
       background: var(--surface2);
@@ -158,7 +212,6 @@
     }
     .analysis-item .a-key { color: var(--text-muted); }
     .analysis-item .a-val { color: var(--text); font-weight: 500; }
-
     .color-palette {
       display: flex; gap: 4px; margin-top: 10px;
     }
@@ -176,6 +229,28 @@
       border: 1px solid var(--border);
     }
     .color-swatch:hover .hex-tooltip { display: block; }
+
+    /* AI Description Display */
+    .ai-description {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; margin-bottom: 18px;
+      display: none;
+    }
+    .ai-description.visible { display: block; }
+    .ai-description .ai-desc-label {
+      font-size: 11px; font-weight: 600; color: var(--yellow);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ai-description .ai-desc-text {
+      font-size: 13px; color: var(--text-dim); line-height: 1.6;
+    }
+    .ai-description .ai-field {
+      margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .ai-description .ai-field-key { color: var(--text-muted); font-weight: 600; }
+    .ai-description .ai-field-val { color: var(--text); }
 
     /* Input Section */
     label {
@@ -356,37 +431,50 @@
         <div class="panel">
           <div class="panel-title"><div class="dot"></div> Image Upload</div>
 
+          <!-- API Key -->
+          <div class="api-key-bar">
+            <input type="password" id="apiKeyInput" placeholder="Gemini API Key">
+            <button class="api-key-save" id="apiKeySave" onclick="saveApiKey()">Save</button>
+          </div>
+          <div class="api-key-hint">Required for AI image analysis. Free at <a href="https://aistudio.google.com/" target="_blank">aistudio.google.com</a></div>
+
           <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
             <input type="file" id="fileInput" accept="image/*">
             <div class="drop-icon" id="dropIcon">&#128247;</div>
             <div class="drop-text" id="dropText">Drop an image here or click to upload</div>
-            <div class="drop-hint" id="dropHint">Supports JPG, PNG, WebP</div>
+            <div class="drop-hint" id="dropHint">Supports JPG, PNG, WebP — AI will analyze content automatically</div>
             <button class="clear-image" id="clearBtn" onclick="event.stopPropagation(); clearImage();">&times;</button>
           </div>
 
-          <!-- Analysis Results -->
+          <!-- AI Status -->
+          <div class="ai-status" id="aiStatus"></div>
+
+          <!-- AI Description -->
+          <div class="ai-description" id="aiDescription"></div>
+
+          <!-- Pixel Analysis Results -->
           <div class="analysis-panel" id="analysisPanel">
-            <div class="analysis-label">Image Analysis</div>
+            <div class="analysis-label">Pixel Analysis</div>
             <div class="analysis-grid" id="analysisGrid"></div>
             <div class="color-palette" id="colorPalette"></div>
           </div>
 
           <div class="input-group">
-            <label>Subject Description *</label>
-            <textarea id="subjectInput" placeholder="Describe the main subject — e.g. 'lone samurai standing in rain-drenched neon alley'" rows="3"></textarea>
-            <div class="hint">Required. What's in the image? The analysis handles the style — you provide the subject.</div>
+            <label>Subject Description</label>
+            <textarea id="subjectInput" placeholder="Auto-filled by AI. Edit to refine or add details..." rows="3"></textarea>
+            <div class="hint">AI-detected from image. You can edit to add context or correct details.</div>
           </div>
 
           <div class="input-group">
             <label>Aesthetic</label>
             <div class="chips" id="aestheticChips"></div>
-            <div class="hint" style="margin-top:6px;">Auto-detected from image. Click to override.</div>
+            <div class="hint" style="margin-top:6px;">Auto-detected by AI. Click to override.</div>
           </div>
 
           <div class="input-group">
             <label>Mood / Lighting</label>
             <select id="moodSelect">
-              <option value="">Auto (from image analysis)</option>
+              <option value="">Auto (from AI analysis)</option>
               <option value="golden-hour">Golden Hour</option>
               <option value="moody-dark">Moody / Dark</option>
               <option value="bright-clean">Bright / Clean</option>
@@ -414,7 +502,7 @@
             </div>
             <div class="input-group" style="margin-bottom:0;">
               <label>Surface / Environment</label>
-              <input type="text" id="surfaceInput" placeholder="e.g. marble, concrete, grass">
+              <input type="text" id="surfaceInput" placeholder="Auto-filled by AI">
             </div>
           </div>
 
@@ -481,7 +569,7 @@
 
           <div class="output-block highlight">
             <div class="output-label">NB2-Optimized Prompt</div>
-            <div class="output-text placeholder" id="promptText">Upload an image and describe the subject to generate a prompt...</div>
+            <div class="output-text placeholder" id="promptText">Upload an image to auto-analyze and generate a prompt...</div>
             <button class="copy-btn" id="copyPrompt" style="display:none" onclick="copyText('promptText', this)">Copy</button>
           </div>
 
@@ -523,137 +611,125 @@
   // ====== STATE ======
   let selectedAesthetic = 'auto';
   let imageAnalysis = null;
+  let aiAnalysis = null;
+  let currentBase64 = null;
   let history = [];
 
+  // ====== API KEY ======
+  const savedKey = localStorage.getItem('nb2_api_key');
+  if (savedKey) {
+    document.getElementById('apiKeyInput').value = savedKey;
+    document.getElementById('apiKeySave').textContent = 'Saved';
+    document.getElementById('apiKeySave').classList.add('saved');
+  }
+
+  function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) return;
+    localStorage.setItem('nb2_api_key', key);
+    const btn = document.getElementById('apiKeySave');
+    btn.textContent = 'Saved';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 2000);
+  }
+
+  function getApiKey() {
+    return document.getElementById('apiKeyInput').value.trim() || localStorage.getItem('nb2_api_key') || '';
+  }
+
   // ====== KNOWLEDGE BASE (ported from prompt-creator.html) ======
-
-  const aestheticKeywords = {
-    photorealistic: ['photo', 'realistic', 'portrait', 'headshot', 'face', 'person', 'people', 'selfie', 'film', 'camera'],
-    anime: ['anime', 'manga', 'ghibli', 'cel', 'waifu', 'kawaii', 'chibi', 'otaku', 'naruto', 'mecha'],
-    cyberpunk: ['cyber', 'neon', 'futur', 'dystop', 'blade runner', 'hologram', 'hacker', 'samurai', 'synth', 'matrix'],
-    product: ['product', 'sneaker', 'shoe', 'headphone', 'watch', 'perfume', 'bottle', 'packag', 'mockup', 'ecommerce', 'amazon'],
-    watercolor: ['watercolor', 'watercolour', 'paint', 'brush', 'traditio', 'botanical', 'sketch'],
-    fantasy: ['dragon', 'magic', 'wizard', 'castle', 'elf', 'dwarf', 'enchant', 'myth', 'portal', 'spell', 'forest'],
-    typography: ['text', 'poster', 'sign', 'menu', 'lettering', 'font', 'neon sign', 'billboard', 'quote', 'word'],
-    pixel: ['pixel', '8-bit', '16-bit', 'retro game', 'sprite', 'rpg', 'nes', 'snes', 'gameboy'],
-    editorial: ['fashion', 'model', 'vogue', 'editorial', 'runway', 'glamour', 'beauty', 'haute'],
-    concept: ['concept art', 'matte paint', 'worldbuild', 'sci-fi', 'alien', 'spaceship', 'underwater city'],
-    food: ['food', 'dish', 'meal', 'restaurant', 'dessert', 'coffee', 'latte', 'sushi', 'cake', 'plat'],
-    branding: ['logo', 'brand', 'merch', 't-shirt', 'packaging', 'label', 'identity', 'business card'],
-    architecture: ['building', 'interior', 'architect', 'house', 'cabin', 'room', 'kitchen', 'bathroom', 'office'],
-    uiux: ['ui', 'ux', 'app', 'dashboard', 'interface', 'screen', 'mobile', 'website', 'saas'],
-    retro: ['retro', 'vintage', 'vhs', '80s', '70s', '90s', 'synthwave', 'outrun', 'nostalg', 'cassette'],
-    '3d': ['3d', 'render', 'isometric', 'blender', 'c4d', 'octane', 'clay', 'diorama', 'chrome', 'liquid metal']
-  };
-
   const aestheticEnhancements = {
     photorealistic: {
       camera: 'Shot on 85mm f/1.8 lens, shallow depth of field',
       lighting: 'natural fill light with golden rim light',
-      quality: 'calibrated color grading with accurate skin tones, high dynamic range',
-      film: 'Kodak Portra 400 tonality'
+      quality: 'calibrated color grading with accurate skin tones, high dynamic range'
     },
     anime: {
       style: 'detailed anime illustration style',
       rendering: 'clean cel-shaded rendering with vibrant colors',
-      composition: 'dynamic composition with expressive character proportions',
-      detail: 'hand-painted feel with visible brushwork'
+      composition: 'dynamic composition with expressive character proportions'
     },
     cyberpunk: {
       atmosphere: 'neon-lit atmosphere with rain-slicked surfaces reflecting pink and blue light',
-      environment: 'towering holographic billboards and flying vehicles in background',
       camera: 'low angle 35mm lens, anamorphic lens flare',
       reference: 'Blade Runner 2049 cinematography'
     },
     product: {
       lighting: 'three-point studio lighting — key from upper left, fill softening shadows, rim light separating from background',
-      surface: 'on a polished surface with subtle reflections',
       quality: 'focus-stacked for edge-to-edge sharpness',
       purpose: 'commercial product photography'
     },
     watercolor: {
       technique: 'wet-on-wet watercolor technique with colors bleeding naturally',
       texture: 'visible paper texture with deliberate unpainted white space',
-      palette: 'soft translucent color washes',
       feel: 'traditional watercolor painting aesthetic'
     },
     fantasy: {
       scale: 'epic scale with tiny human figures for reference',
       lighting: 'volumetric god rays and atmospheric perspective',
-      quality: 'matte painting quality, cinematic concept art',
-      detail: 'intricate environmental storytelling'
+      quality: 'matte painting quality, cinematic concept art'
     },
     typography: {
       text: 'clearly legible text, high contrast for readability',
-      style: 'typography-focused composition',
       rendering: 'precise letterforms with consistent baseline',
       quality: 'print-ready quality'
     },
     pixel: {
       resolution: '32x32 pixels per tile, limited color palette',
       style: 'clean pixel edges, no anti-aliasing',
-      era: 'SNES-era aesthetic with dithering for gradients',
-      constraint: 'strict pixel grid alignment'
+      era: 'SNES-era aesthetic with dithering for gradients'
     },
     editorial: {
       camera: 'Hasselblad H6D, 80mm lens, beauty dish lighting',
       style: 'high-fashion editorial with dramatic silhouette',
-      quality: 'Vogue Italia aesthetic',
-      mood: 'bold shadows and sculptural composition'
+      quality: 'Vogue Italia aesthetic'
     },
     concept: {
       quality: 'professional concept art, matte painting quality',
       detail: 'environmental storytelling with scale indicators',
-      atmosphere: 'volumetric lighting and atmospheric depth',
-      reference: 'industry-standard concept art'
+      atmosphere: 'volumetric lighting and atmospheric depth'
     },
     food: {
       camera: '100mm macro lens at f/4, extreme detail',
       lighting: 'single directional light from upper left creating defined shadows',
-      style: 'Michelin-starred restaurant presentation',
-      detail: 'individual texture visible — grains, droplets, garnish placement'
+      style: 'Michelin-starred restaurant presentation'
     },
     branding: {
       style: 'clean brand mockup photography',
       lighting: 'soft even studio light, no harsh shadows',
-      quality: 'commercial-grade brand identity presentation',
-      detail: 'visible material textures — thread, foil, paper stock'
+      quality: 'commercial-grade brand identity presentation'
     },
     architecture: {
       camera: '24mm tilt-shift lens with corrected verticals',
       lighting: 'golden hour light creating warm tones and long shadows',
-      quality: 'architectural photography, large format camera quality',
-      detail: 'precise material textures — concrete, wood grain, glass'
+      quality: 'architectural photography, large format camera quality'
     },
     uiux: {
       style: 'clean UI mockup on device frame',
       design: 'modern dark-mode interface with clear hierarchy',
-      quality: 'product design presentation quality',
-      detail: 'pixel-perfect typography and spacing'
+      quality: 'product design presentation quality'
     },
     retro: {
       texture: 'authentic analog artifacts — grain, scan lines, color bleeding',
       style: 'period-accurate aesthetic with era-specific technology',
-      quality: 'convincing vintage look with appropriate degradation',
-      detail: 'era-specific typography and design language'
+      quality: 'convincing vintage look with appropriate degradation'
     },
     '3d': {
       rendering: 'physically accurate materials with ambient occlusion',
       lighting: 'studio HDRI lighting with caustic light patterns',
-      quality: 'Octane Render / Blender quality, 8K resolution',
-      style: 'clean 3D render aesthetic'
+      quality: 'Octane Render / Blender quality, 8K resolution'
     }
   };
 
   const moodEnhancements = {
-    'golden-hour': 'warm golden hour sunlight casting long amber shadows, the sky transitioning from peach to soft blue',
-    'moody-dark': 'moody low-key lighting with deep shadows and selective highlights, dark atmospheric tension',
-    'bright-clean': 'bright, clean, evenly-lit environment with soft shadows and high-key exposure',
-    'neon': 'vibrant neon lighting in electric pink, blue, and purple, with strong color reflections on surfaces',
-    'soft-natural': 'soft diffused natural light, gentle shadows, warm and inviting atmosphere',
-    'dramatic': 'dramatic cinematic lighting with strong contrast, volumetric light shafts, and deep blacks',
-    'overcast': 'overcast diffused light with muted tones, soft even illumination, contemplative mood',
-    'studio': 'professional studio three-point lighting — key light, fill light, and rim light'
+    'golden-hour': 'warm golden hour sunlight casting long amber shadows',
+    'moody-dark': 'moody low-key lighting with deep shadows and selective highlights',
+    'bright-clean': 'bright, clean, evenly-lit environment with soft shadows',
+    'neon': 'vibrant neon lighting in electric pink, blue, and purple',
+    'soft-natural': 'soft diffused natural light, gentle shadows, warm atmosphere',
+    'dramatic': 'dramatic cinematic lighting with strong contrast and deep blacks',
+    'overcast': 'overcast diffused light with muted tones, contemplative mood',
+    'studio': 'professional studio three-point lighting — key, fill, rim'
   };
 
   const aestheticLabels = {
@@ -668,18 +744,13 @@
   // ====== INIT CHIPS ======
   (function initChips() {
     const container = document.getElementById('aestheticChips');
-    const cats = Object.keys(aestheticLabels);
-    container.innerHTML = cats.map(cat =>
+    container.innerHTML = Object.keys(aestheticLabels).map(cat =>
       `<div class="chip" data-cat="${cat}" onclick="selectAesthetic('${cat}')">${aestheticLabels[cat]}</div>`
     ).join('');
   })();
 
   function selectAesthetic(cat) {
-    if (selectedAesthetic === cat) {
-      selectedAesthetic = 'auto';
-    } else {
-      selectedAesthetic = cat;
-    }
+    selectedAesthetic = selectedAesthetic === cat ? 'auto' : cat;
     document.querySelectorAll('#aestheticChips .chip').forEach(c => {
       c.classList.toggle('active', c.dataset.cat === selectedAesthetic);
     });
@@ -704,12 +775,17 @@
   function handleImage(file) {
     const reader = new FileReader();
     reader.onload = e => {
+      const dataUrl = e.target.result;
+      currentBase64 = dataUrl.split(',')[1];
+      const mimeType = file.type;
+
       const img = new Image();
       img.onload = () => {
-        showPreview(img, e.target.result);
-        analyzeImage(img);
+        showPreview(img, dataUrl);
+        analyzePixels(img);
+        analyzeWithAI(currentBase64, mimeType);
       };
-      img.src = e.target.result;
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   }
@@ -718,17 +794,13 @@
     const preview = document.createElement('img');
     preview.src = src;
     preview.id = 'previewImg';
-    const icon = document.getElementById('dropIcon');
-    const text = document.getElementById('dropText');
-    const hint = document.getElementById('dropHint');
-    icon.style.display = 'none';
-    text.style.display = 'none';
-    hint.style.display = 'none';
+    document.getElementById('dropIcon').style.display = 'none';
+    document.getElementById('dropText').style.display = 'none';
+    document.getElementById('dropHint').style.display = 'none';
     const existing = document.getElementById('previewImg');
     if (existing) existing.remove();
     dropZone.insertBefore(preview, dropZone.firstChild);
     dropZone.classList.add('has-image');
-    document.getElementById('generateBtn').disabled = false;
   }
 
   function clearImage() {
@@ -739,19 +811,183 @@
     document.getElementById('dropText').style.display = '';
     document.getElementById('dropHint').style.display = '';
     document.getElementById('analysisPanel').classList.remove('visible');
+    document.getElementById('aiDescription').classList.remove('visible');
+    document.getElementById('aiStatus').className = 'ai-status';
     document.getElementById('generateBtn').disabled = true;
+    document.getElementById('subjectInput').value = '';
+    document.getElementById('surfaceInput').value = '';
     fileInput.value = '';
     imageAnalysis = null;
+    aiAnalysis = null;
+    currentBase64 = null;
     selectedAesthetic = 'auto';
     document.querySelectorAll('#aestheticChips .chip').forEach(c => c.classList.remove('active'));
   }
 
-  // ====== CANVAS IMAGE ANALYSIS ======
-  function analyzeImage(img) {
+  // ====== GEMINI VISION API ANALYSIS ======
+  async function analyzeWithAI(base64, mimeType) {
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      setAiStatus('error', 'Enter your Gemini API key above to enable AI image analysis');
+      document.getElementById('generateBtn').disabled = false;
+      return;
+    }
+
+    setAiStatus('analyzing', 'Analyzing image with Gemini Vision...');
+
+    const prompt = `Analyze this image in detail for AI image recreation. Return ONLY a JSON object with these exact fields:
+
+{
+  "subject": "Detailed description of the main subject, what they're doing, their appearance, expression, clothing, and position in the scene. Be specific and vivid. 2-3 sentences.",
+  "environment": "Description of the background, setting, environment, surfaces, and surroundings. 1-2 sentences.",
+  "lighting": "Description of the lighting — direction, color, intensity, mood it creates. 1 sentence.",
+  "camera": "Camera angle and perspective — one of: close-up, wide-angle, eye-level, overhead, low-angle, macro, isometric, or a custom description",
+  "style": "The artistic style — one of: photorealistic, anime, cyberpunk, product, watercolor, fantasy, typography, pixel, editorial, concept, food, branding, architecture, uiux, retro, 3d",
+  "mood": "The overall mood — one of: golden-hour, moody-dark, bright-clean, neon, soft-natural, dramatic, overcast, studio",
+  "colors": "Notable colors in the image, described naturally (e.g. 'deep navy blue, warm amber highlights, cool grey shadows')",
+  "details": "Any other important visual details: textures, materials, special effects, text visible, notable artistic techniques. 1-2 sentences.",
+  "has_text": false,
+  "text_content": "If has_text is true, what text is visible in the image"
+}
+
+Be precise and descriptive. The output will be used to generate an AI image prompt to recreate this image.`;
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type: mimeType, data: base64 } }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.3,
+              responseMimeType: 'application/json'
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('No response from Gemini');
+
+      aiAnalysis = JSON.parse(text);
+      setAiStatus('success', 'AI analysis complete');
+      displayAiAnalysis();
+      applyAiAnalysis();
+      document.getElementById('generateBtn').disabled = false;
+
+    } catch (err) {
+      console.error('Gemini Vision error:', err);
+      setAiStatus('error', `AI analysis failed: ${err.message}`);
+      document.getElementById('generateBtn').disabled = false;
+    }
+  }
+
+  function setAiStatus(type, message) {
+    const el = document.getElementById('aiStatus');
+    el.className = `ai-status ${type}`;
+    el.innerHTML = type === 'analyzing'
+      ? `<div class="spinner"></div>${message}`
+      : message;
+  }
+
+  function displayAiAnalysis() {
+    if (!aiAnalysis) return;
+    const el = document.getElementById('aiDescription');
+    el.classList.add('visible');
+
+    el.innerHTML = `
+      <div class="ai-desc-label">&#9889; Gemini Vision Analysis</div>
+      <div class="ai-desc-text">${aiAnalysis.subject}</div>
+      ${aiAnalysis.environment ? `<div class="ai-field"><span class="ai-field-key">Environment: </span><span class="ai-field-val">${aiAnalysis.environment}</span></div>` : ''}
+      ${aiAnalysis.lighting ? `<div class="ai-field"><span class="ai-field-key">Lighting: </span><span class="ai-field-val">${aiAnalysis.lighting}</span></div>` : ''}
+      ${aiAnalysis.colors ? `<div class="ai-field"><span class="ai-field-key">Colors: </span><span class="ai-field-val">${aiAnalysis.colors}</span></div>` : ''}
+      ${aiAnalysis.details ? `<div class="ai-field"><span class="ai-field-key">Details: </span><span class="ai-field-val">${aiAnalysis.details}</span></div>` : ''}
+      ${aiAnalysis.has_text && aiAnalysis.text_content ? `<div class="ai-field"><span class="ai-field-key">Text: </span><span class="ai-field-val">"${aiAnalysis.text_content}"</span></div>` : ''}
+    `;
+  }
+
+  function applyAiAnalysis() {
+    if (!aiAnalysis) return;
+
+    // Auto-fill subject
+    document.getElementById('subjectInput').value = aiAnalysis.subject || '';
+
+    // Auto-fill surface/environment
+    if (aiAnalysis.environment) {
+      document.getElementById('surfaceInput').value = aiAnalysis.environment;
+    }
+
+    // Auto-select aesthetic
+    const style = (aiAnalysis.style || '').toLowerCase().replace(/[\s-]/g, '');
+    const styleMap = {
+      'photorealistic': 'photorealistic', 'anime': 'anime', 'cyberpunk': 'cyberpunk',
+      'product': 'product', 'watercolor': 'watercolor', 'fantasy': 'fantasy',
+      'typography': 'typography', 'pixel': 'pixel', 'editorial': 'editorial',
+      'concept': 'concept', 'food': 'food', 'branding': 'branding',
+      'architecture': 'architecture', 'uiux': 'uiux', 'retro': 'retro',
+      '3d': '3d', '3drender': '3d', 'pixelart': 'pixel',
+      'conceptart': 'concept', 'fashioneditorial': 'editorial',
+      'foodphotography': 'food', 'productphotography': 'product',
+      'ui/ux': 'uiux', 'uidesign': 'uiux'
+    };
+    const detectedStyle = styleMap[style] || 'photorealistic';
+    selectedAesthetic = detectedStyle;
+    document.querySelectorAll('#aestheticChips .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.cat === detectedStyle);
+    });
+
+    // Auto-select mood
+    const mood = (aiAnalysis.mood || '').toLowerCase().replace(/[\s]/g, '-');
+    const moodMap = {
+      'golden-hour': 'golden-hour', 'moody-dark': 'moody-dark',
+      'bright-clean': 'bright-clean', 'neon': 'neon',
+      'soft-natural': 'soft-natural', 'dramatic': 'dramatic',
+      'overcast': 'overcast', 'studio': 'studio'
+    };
+    if (moodMap[mood]) {
+      document.getElementById('moodSelect').value = moodMap[mood];
+    }
+
+    // Auto-select camera
+    const cam = (aiAnalysis.camera || '').toLowerCase();
+    const camMap = {
+      'close-up': 'close-up', 'closeup': 'close-up',
+      'wide-angle': 'wide-angle', 'wide angle': 'wide-angle', 'wideangle': 'wide-angle',
+      'eye-level': 'eye-level', 'eye level': 'eye-level', 'eyelevel': 'eye-level',
+      'overhead': 'overhead', "bird's eye": 'overhead', 'birds eye': 'overhead',
+      'low-angle': 'low-angle', 'low angle': 'low-angle',
+      'macro': 'macro', 'isometric': 'isometric'
+    };
+    for (const [key, val] of Object.entries(camMap)) {
+      if (cam.includes(key)) {
+        document.getElementById('cameraSelect').value = val;
+        break;
+      }
+    }
+
+    // Auto-detect text toggle
+    if (aiAnalysis.has_text) {
+      document.getElementById('toggleText').classList.add('on');
+    }
+  }
+
+  // ====== PIXEL ANALYSIS (Canvas API) ======
+  function analyzePixels(img) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
-    // Downsample for performance
     const maxDim = 100;
     const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
     canvas.width = Math.round(img.width * scale);
@@ -760,123 +996,59 @@
 
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     const pixelCount = canvas.width * canvas.height;
-
-    // Collect pixel data
     let totalR = 0, totalG = 0, totalB = 0;
-    let lumValues = [];
-    let satValues = [];
+    let lumValues = [], satValues = [];
     const pixels = [];
 
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i], g = data[i+1], b = data[i+2];
       totalR += r; totalG += g; totalB += b;
-
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       lumValues.push(lum);
-
-      // HSL saturation
       const max = Math.max(r, g, b) / 255;
       const min = Math.min(r, g, b) / 255;
       const l = (max + min) / 2;
       const sat = max === min ? 0 : (l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min));
       satValues.push(sat);
-
       pixels.push([r, g, b]);
     }
 
-    // Brightness
     const avgLum = lumValues.reduce((a, b) => a + b, 0) / pixelCount;
     const brightness = avgLum < 80 ? 'Dark' : avgLum < 170 ? 'Medium' : 'Bright';
-
-    // Contrast (std deviation of luminance)
-    const lumMean = avgLum;
-    const lumVariance = lumValues.reduce((sum, l) => sum + (l - lumMean) ** 2, 0) / pixelCount;
+    const lumVariance = lumValues.reduce((sum, l) => sum + (l - avgLum) ** 2, 0) / pixelCount;
     const lumStd = Math.sqrt(lumVariance);
     const contrast = lumStd < 35 ? 'Low' : lumStd < 65 ? 'Medium' : 'High';
-
-    // Color temperature
-    const avgR = totalR / pixelCount;
-    const avgB = totalB / pixelCount;
+    const avgR = totalR / pixelCount, avgB = totalB / pixelCount;
     const tempDiff = avgR - avgB;
     const temperature = tempDiff > 20 ? 'Warm' : tempDiff < -20 ? 'Cool' : 'Neutral';
-
-    // Saturation
     const avgSat = satValues.reduce((a, b) => a + b, 0) / pixelCount;
     const saturation = avgSat < 0.15 ? 'Desaturated' : avgSat < 0.4 ? 'Moderate' : 'Vivid';
 
-    // Edge density (simplified Sobel)
-    let edgeSum = 0;
-    const w = canvas.width;
-    for (let y = 1; y < canvas.height - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const idx = (y * w + x) * 4;
-        const gx = -lumValues[(y-1)*w+(x-1)] + lumValues[(y-1)*w+(x+1)]
-                   -2*lumValues[y*w+(x-1)] + 2*lumValues[y*w+(x+1)]
-                   -lumValues[(y+1)*w+(x-1)] + lumValues[(y+1)*w+(x+1)];
-        const gy = -lumValues[(y-1)*w+(x-1)] - 2*lumValues[(y-1)*w+x] - lumValues[(y-1)*w+(x+1)]
-                   +lumValues[(y+1)*w+(x-1)] + 2*lumValues[(y+1)*w+x] + lumValues[(y+1)*w+(x+1)];
-        edgeSum += Math.sqrt(gx * gx + gy * gy);
-      }
-    }
-    const edgeDensity = edgeSum / pixelCount;
-    const detail = edgeDensity < 15 ? 'Simple' : edgeDensity < 40 ? 'Moderate' : 'Detailed';
-
-    // Dominant colors (simplified k-means, k=5)
     const colors = kMeansColors(pixels, 5, 10);
-
-    // Aspect ratio mapping
     const ratio = img.width / img.height;
     const aspectRatio = mapAspectRatio(ratio);
-
-    // Resolution mapping
     const maxPx = Math.max(img.width, img.height);
     const resolution = maxPx <= 600 ? '512' : maxPx <= 1200 ? '1K' : maxPx <= 2500 ? '2K' : '4K';
 
-    // Detect aesthetic from image properties
-    const detectedAesthetic = detectAestheticFromImage({
-      brightness, contrast, temperature, saturation, detail,
-      avgLum, avgSat, avgR, avgB, colors, lumStd
-    });
-
     imageAnalysis = {
       width: img.width, height: img.height,
-      brightness, contrast, temperature, saturation, detail,
-      colors, aspectRatio, resolution, detectedAesthetic,
-      avgLum, avgSat, lumStd
+      brightness, contrast, temperature, saturation,
+      colors, aspectRatio, resolution
     };
 
-    // Display analysis
-    displayAnalysis();
-
-    // Auto-set UI from analysis
+    displayPixelAnalysis();
     document.getElementById('sizeSelect').value = resolution;
     document.getElementById('aspectSelect').value = aspectRatio;
-
-    // Auto-detect mood from analysis
-    autoDetectMood();
-
-    // Auto-select aesthetic chip
-    if (selectedAesthetic === 'auto') {
-      selectedAesthetic = detectedAesthetic;
-      document.querySelectorAll('#aestheticChips .chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.cat === detectedAesthetic);
-      });
-    }
   }
 
-  // ====== K-MEANS COLOR CLUSTERING ======
   function kMeansColors(pixels, k, iterations) {
-    // Initialize centroids from evenly spaced pixels
     let centroids = [];
     const step = Math.max(1, Math.floor(pixels.length / k));
     for (let i = 0; i < k; i++) {
       centroids.push([...pixels[Math.min(i * step, pixels.length - 1)]]);
     }
-
     for (let iter = 0; iter < iterations; iter++) {
       const clusters = Array.from({ length: k }, () => []);
-
-      // Assign pixels to nearest centroid
       for (const px of pixels) {
         let minDist = Infinity, closest = 0;
         for (let c = 0; c < k; c++) {
@@ -885,8 +1057,6 @@
         }
         clusters[closest].push(px);
       }
-
-      // Update centroids
       for (let c = 0; c < k; c++) {
         if (clusters[c].length === 0) continue;
         centroids[c] = [
@@ -896,9 +1066,7 @@
         ];
       }
     }
-
-    // Sort by cluster size (most dominant first)
-    const counts = centroids.map((c, i) => ({ color: c, count: 0 }));
+    const counts = centroids.map(c => ({ color: c, count: 0 }));
     for (const px of pixels) {
       let minDist = Infinity, closest = 0;
       for (let c = 0; c < k; c++) {
@@ -908,30 +1076,18 @@
       counts[closest].count++;
     }
     counts.sort((a, b) => b.count - a.count);
-
     return counts.map(c => ({ r: c.color[0], g: c.color[1], b: c.color[2] }));
   }
 
-  // ====== ASPECT RATIO MAPPING ======
   function mapAspectRatio(ratio) {
     const ratios = [
-      { label: '1:1', value: 1 },
-      { label: '4:5', value: 4/5 },
-      { label: '5:4', value: 5/4 },
-      { label: '3:4', value: 3/4 },
-      { label: '4:3', value: 4/3 },
-      { label: '2:3', value: 2/3 },
-      { label: '3:2', value: 3/2 },
-      { label: '9:16', value: 9/16 },
-      { label: '16:9', value: 16/9 },
-      { label: '21:9', value: 21/9 },
-      { label: '1:4', value: 1/4 },
-      { label: '4:1', value: 4/1 },
-      { label: '1:8', value: 1/8 },
-      { label: '8:1', value: 8/1 }
+      { label: '1:1', value: 1 }, { label: '4:5', value: 4/5 }, { label: '5:4', value: 5/4 },
+      { label: '3:4', value: 3/4 }, { label: '4:3', value: 4/3 }, { label: '2:3', value: 2/3 },
+      { label: '3:2', value: 3/2 }, { label: '9:16', value: 9/16 }, { label: '16:9', value: 16/9 },
+      { label: '21:9', value: 21/9 }, { label: '1:4', value: 1/4 }, { label: '4:1', value: 4/1 },
+      { label: '1:8', value: 1/8 }, { label: '8:1', value: 8/1 }
     ];
-    let closest = ratios[0];
-    let minDiff = Infinity;
+    let closest = ratios[0], minDiff = Infinity;
     for (const r of ratios) {
       const diff = Math.abs(ratio - r.value);
       if (diff < minDiff) { minDiff = diff; closest = r; }
@@ -939,116 +1095,10 @@
     return closest.label;
   }
 
-  // ====== AESTHETIC DETECTION FROM IMAGE PROPERTIES ======
-  function detectAestheticFromImage(props) {
-    const scores = {};
-    for (const cat of Object.keys(aestheticLabels)) scores[cat] = 0;
-
-    // Dark + high saturation + neon colors = Cyberpunk
-    if (props.brightness === 'Dark' && props.saturation === 'Vivid') {
-      const hasNeon = props.colors.some(c => (c.r > 150 && c.b > 150 && c.g < 100) || (c.r < 80 && c.g > 100 && c.b > 200));
-      if (hasNeon) scores.cyberpunk += 4;
-      else scores.cyberpunk += 2;
-    }
-
-    // Bright + low contrast + white dominant = Product
-    if (props.brightness === 'Bright' && props.contrast === 'Low') {
-      scores.product += 3;
-      scores.uiux += 2;
-    }
-
-    // High saturation + bright + primary colors = Anime
-    if (props.saturation === 'Vivid' && props.brightness !== 'Dark') {
-      scores.anime += 2;
-    }
-
-    // Low saturation + warm + soft = Watercolor
-    if ((props.saturation === 'Desaturated' || props.saturation === 'Moderate') && props.temperature === 'Warm') {
-      scores.watercolor += 2;
-    }
-
-    // Very dark + dramatic contrast = Editorial
-    if (props.brightness === 'Dark' && props.contrast === 'High') {
-      scores.editorial += 3;
-      scores.concept += 2;
-    }
-
-    // Warm vintage tones = Retro
-    if (props.temperature === 'Warm' && props.saturation === 'Moderate' && props.contrast === 'Medium') {
-      scores.retro += 2;
-      scores.photorealistic += 1;
-    }
-
-    // Smooth gradients + clean = 3D Render
-    if (props.detail === 'Simple' && props.saturation === 'Vivid') {
-      scores['3d'] += 3;
-    }
-
-    // Neutral + geometric + clean = UI/UX
-    if (props.temperature === 'Neutral' && props.detail === 'Simple') {
-      scores.uiux += 2;
-      scores.branding += 2;
-    }
-
-    // Detailed + warm = Architecture / Food
-    if (props.detail === 'Detailed' && props.temperature === 'Warm') {
-      scores.architecture += 2;
-      scores.food += 2;
-    }
-
-    // Fantasy: dark with warm highlights
-    if (props.brightness === 'Dark' && props.temperature === 'Warm' && props.contrast === 'High') {
-      scores.fantasy += 2;
-    }
-
-    // Pixel art: simple detail, vivid, small image
-    if (props.detail === 'Simple' && props.saturation !== 'Desaturated') {
-      scores.pixel += 1;
-    }
-
-    // Typography: medium brightness, high contrast
-    if (props.contrast === 'High' && props.brightness === 'Medium') {
-      scores.typography += 1;
-    }
-
-    // Default photorealistic bump
-    scores.photorealistic += 1;
-
-    // Return highest scoring
-    let best = 'photorealistic', bestScore = 0;
-    for (const [cat, score] of Object.entries(scores)) {
-      if (score > bestScore) { bestScore = score; best = cat; }
-    }
-    return best;
-  }
-
-  // ====== AUTO-DETECT MOOD ======
-  function autoDetectMood() {
-    if (!imageAnalysis) return;
-    const { brightness, contrast, temperature, avgLum, lumStd } = imageAnalysis;
-
-    if (brightness === 'Dark' && contrast === 'High') {
-      document.getElementById('moodSelect').value = 'dramatic';
-    } else if (brightness === 'Dark' && contrast !== 'High') {
-      document.getElementById('moodSelect').value = 'moody-dark';
-    } else if (temperature === 'Warm' && brightness !== 'Dark') {
-      document.getElementById('moodSelect').value = 'golden-hour';
-    } else if (brightness === 'Bright' && contrast === 'Low') {
-      document.getElementById('moodSelect').value = 'bright-clean';
-    } else if (temperature === 'Cool' && contrast === 'Low') {
-      document.getElementById('moodSelect').value = 'overcast';
-    } else {
-      document.getElementById('moodSelect').value = 'soft-natural';
-    }
-  }
-
-  // ====== DISPLAY ANALYSIS ======
-  function displayAnalysis() {
+  function displayPixelAnalysis() {
     if (!imageAnalysis) return;
     const a = imageAnalysis;
-    const panel = document.getElementById('analysisPanel');
-    panel.classList.add('visible');
-
+    document.getElementById('analysisPanel').classList.add('visible');
     document.getElementById('analysisGrid').innerHTML = `
       <div class="analysis-item"><span class="a-key">Dimensions</span><span class="a-val">${a.width} &times; ${a.height}</span></div>
       <div class="analysis-item"><span class="a-key">Aspect Ratio</span><span class="a-val">${a.aspectRatio}</span></div>
@@ -1056,10 +1106,7 @@
       <div class="analysis-item"><span class="a-key">Contrast</span><span class="a-val">${a.contrast}</span></div>
       <div class="analysis-item"><span class="a-key">Temperature</span><span class="a-val">${a.temperature}</span></div>
       <div class="analysis-item"><span class="a-key">Saturation</span><span class="a-val">${a.saturation}</span></div>
-      <div class="analysis-item"><span class="a-key">Detail Level</span><span class="a-val">${a.detail}</span></div>
-      <div class="analysis-item"><span class="a-key">Detected Style</span><span class="a-val" style="color:var(--yellow)">${aestheticLabels[a.detectedAesthetic]}</span></div>
     `;
-
     document.getElementById('colorPalette').innerHTML = a.colors.map(c => {
       const hex = rgbToHex(c.r, c.g, c.b);
       return `<div class="color-swatch" style="background:${hex}" onclick="copyHex('${hex}')"><span class="hex-tooltip">${hex}</span></div>`;
@@ -1078,11 +1125,7 @@
   function reverseEngineer() {
     const subject = document.getElementById('subjectInput').value.trim();
     if (!subject) {
-      alert('Please describe the main subject of the image.');
-      return;
-    }
-    if (!imageAnalysis) {
-      alert('Please upload an image first.');
+      alert('Please wait for AI analysis or describe the subject manually.');
       return;
     }
 
@@ -1096,19 +1139,29 @@
     const transparent = document.getElementById('toggleTransparent').classList.contains('on');
     const hasText = document.getElementById('toggleText').classList.contains('on');
 
-    // Use selected or auto-detected aesthetic
-    const aesthetic = selectedAesthetic === 'auto' ? imageAnalysis.detectedAesthetic : selectedAesthetic;
+    const aesthetic = selectedAesthetic === 'auto' ? 'photorealistic' : selectedAesthetic;
     const enhancements = aestheticEnhancements[aesthetic] || aestheticEnhancements.photorealistic;
 
-    // Build prompt parts
     let parts = [];
 
-    // Core subject
+    // Core subject from AI
     let subj = subject.charAt(0).toUpperCase() + subject.slice(1);
     if (!/[.!?]$/.test(subj)) subj += '.';
     parts.push(subj);
 
-    // Camera / perspective
+    // Environment from AI
+    if (surface && !subject.toLowerCase().includes(surface.toLowerCase().split(' ')[0])) {
+      let env = surface.charAt(0).toUpperCase() + surface.slice(1);
+      if (!/[.!?]$/.test(env)) env += '.';
+      parts.push(env);
+    }
+
+    // AI-detected lighting
+    if (aiAnalysis?.lighting && !mood) {
+      parts.push(aiAnalysis.lighting);
+    }
+
+    // Camera
     if (camera) {
       const cameraMap = {
         'close-up': 'Close-up framing',
@@ -1122,63 +1175,64 @@
       parts.push(cameraMap[camera] || camera);
     }
 
-    // Surface / environment
-    if (surface) {
-      parts.push(`On ${surface} surface`);
-    }
-
-    // Add aesthetic-specific enhancements (top 3)
+    // Aesthetic enhancements (top 2 to avoid bloat)
     const enhKeys = Object.keys(enhancements);
-    for (let i = 0; i < Math.min(3, enhKeys.length); i++) {
+    for (let i = 0; i < Math.min(2, enhKeys.length); i++) {
       const val = enhancements[enhKeys[i]];
-      const words = val.split(' ').slice(0, 3).join(' ').toLowerCase();
-      if (!subject.toLowerCase().includes(words)) {
+      const check = val.split(' ').slice(0, 3).join(' ').toLowerCase();
+      if (!subject.toLowerCase().includes(check)) {
         parts.push(val.charAt(0).toUpperCase() + val.slice(1));
       }
     }
 
-    // Color palette context from analysis
-    const dominantColor = imageAnalysis.colors[0];
-    const colorDesc = describeColor(dominantColor);
-    if (colorDesc) {
-      parts.push(`Dominant ${colorDesc} color palette`);
+    // AI-detected colors
+    if (aiAnalysis?.colors) {
+      parts.push(`Color palette: ${aiAnalysis.colors}`);
     }
 
-    // Mood / lighting
+    // Mood
     if (mood && moodEnhancements[mood]) {
       parts.push(moodEnhancements[mood].charAt(0).toUpperCase() + moodEnhancements[mood].slice(1));
     }
 
-    // Context / purpose
+    // AI details
+    if (aiAnalysis?.details) {
+      parts.push(aiAnalysis.details);
+    }
+
+    // Context
     if (context) {
       parts.push(`Created for ${context}`);
     }
 
     // Text rendering
     if (hasText) {
-      parts.push('Typography-focused with clearly legible text, high contrast for readability');
+      const textNote = aiAnalysis?.text_content
+        ? `Typography with text "${aiAnalysis.text_content}", clearly legible, high contrast`
+        : 'Typography-focused with clearly legible text, high contrast for readability';
+      parts.push(textNote);
     }
 
-    // Join into natural prompt
+    // Join and clean
     let finalPrompt = parts.join('. ').replace(/\.\./g, '.').replace(/\. \./g, '.');
     finalPrompt = finalPrompt.replace(/\s+/g, ' ').trim();
     if (!finalPrompt.endsWith('.')) finalPrompt += '.';
 
-    // Build CLI command
+    // CLI command
     let cli = `nb "${finalPrompt}"`;
     if (size !== '1K') cli += ` -s ${size}`;
     if (aspect !== '1:1') cli += ` -a ${aspect}`;
     if (model === 'pro') cli += ` -m pro`;
     if (transparent) cli += ` -t`;
 
-    // Calculate cost
+    // Cost
     const costs = {
       flash: { '512': 0.045, '1K': 0.067, '2K': 0.101, '4K': 0.151 },
       pro: { '512': 0.045, '1K': 0.134, '2K': 0.201, '4K': 0.302 }
     };
     const cost = costs[model]?.[size] || 0.067;
 
-    // Display results
+    // Display
     const promptEl = document.getElementById('promptText');
     promptEl.textContent = finalPrompt;
     promptEl.classList.remove('placeholder');
@@ -1192,66 +1246,40 @@
     // Breakdown
     document.getElementById('breakdownSection').style.display = 'block';
     document.getElementById('breakdown').innerHTML = `
-      <div class="breakdown-item"><span class="breakdown-key">Subject</span><span class="breakdown-val">${subject}</span></div>
-      <div class="breakdown-item"><span class="breakdown-key">Aesthetic</span><span class="breakdown-val">${aestheticLabels[aesthetic] || aesthetic}${selectedAesthetic === 'auto' ? ' (auto-detected)' : ' (manual)'}</span></div>
-      <div class="breakdown-item"><span class="breakdown-key">Image</span><span class="breakdown-val">${imageAnalysis.width}&times;${imageAnalysis.height}, ${imageAnalysis.brightness}, ${imageAnalysis.contrast} contrast</span></div>
-      <div class="breakdown-item"><span class="breakdown-key">Colors</span><span class="breakdown-val">${imageAnalysis.temperature}, ${imageAnalysis.saturation} saturation</span></div>
+      <div class="breakdown-item"><span class="breakdown-key">Subject</span><span class="breakdown-val">${subject.substring(0, 120)}${subject.length > 120 ? '...' : ''}</span></div>
+      <div class="breakdown-item"><span class="breakdown-key">Aesthetic</span><span class="breakdown-val">${aestheticLabels[aesthetic] || aesthetic} (AI-detected)</span></div>
+      ${aiAnalysis?.lighting ? `<div class="breakdown-item"><span class="breakdown-key">Lighting</span><span class="breakdown-val">${aiAnalysis.lighting}</span></div>` : ''}
+      ${aiAnalysis?.colors ? `<div class="breakdown-item"><span class="breakdown-key">Colors</span><span class="breakdown-val">${aiAnalysis.colors}</span></div>` : ''}
       <div class="breakdown-item"><span class="breakdown-key">Model</span><span class="breakdown-val">${model === 'pro' ? 'Pro (max quality)' : 'Flash (fast)'}</span></div>
       <div class="breakdown-item"><span class="breakdown-key">Resolution</span><span class="breakdown-val">${size}</span></div>
       <div class="breakdown-item"><span class="breakdown-key">Aspect Ratio</span><span class="breakdown-val">${aspect}</span></div>
       ${mood ? `<div class="breakdown-item"><span class="breakdown-key">Mood</span><span class="breakdown-val">${mood.replace(/-/g, ' ')}</span></div>` : ''}
       ${camera ? `<div class="breakdown-item"><span class="breakdown-key">Camera</span><span class="breakdown-val">${camera}</span></div>` : ''}
-      ${surface ? `<div class="breakdown-item"><span class="breakdown-key">Surface</span><span class="breakdown-val">${surface}</span></div>` : ''}
       ${transparent ? `<div class="breakdown-item"><span class="breakdown-key">Transparent</span><span class="breakdown-val">Yes (green screen pipeline)</span></div>` : ''}
-      ${hasText ? `<div class="breakdown-item"><span class="breakdown-key">Text Render</span><span class="breakdown-val">Enabled</span></div>` : ''}
+      ${hasText ? `<div class="breakdown-item"><span class="breakdown-key">Text</span><span class="breakdown-val">${aiAnalysis?.text_content || 'Enabled'}</span></div>` : ''}
       ${context ? `<div class="breakdown-item"><span class="breakdown-key">Purpose</span><span class="breakdown-val">${context}</span></div>` : ''}
     `;
 
-    // Palette bar output
-    document.getElementById('paletteSection').style.display = 'block';
-    document.getElementById('paletteBar').innerHTML = imageAnalysis.colors.map(c => {
-      const hex = rgbToHex(c.r, c.g, c.b);
-      return `<div class="p-swatch" style="background:${hex}" onclick="copyHex('${hex}')"><span class="p-hex">${hex}</span></div>`;
-    }).join('');
+    // Palette bar
+    if (imageAnalysis?.colors) {
+      document.getElementById('paletteSection').style.display = 'block';
+      document.getElementById('paletteBar').innerHTML = imageAnalysis.colors.map(c => {
+        const hex = rgbToHex(c.r, c.g, c.b);
+        return `<div class="p-swatch" style="background:${hex}" onclick="copyHex('${hex}')"><span class="p-hex">${hex}</span></div>`;
+      }).join('');
+    }
 
     // Cost pill
     const costPill = document.getElementById('costPill');
     costPill.style.display = 'inline-flex';
     costPill.innerHTML = `Estimated cost: <span class="price">~$${cost.toFixed(3)}</span> per image`;
 
-    // Add to history
+    // History
     history.unshift({
-      subject, aesthetic: aestheticLabels[aesthetic] || aesthetic,
+      subject: subject.substring(0, 80), aesthetic: aestheticLabels[aesthetic] || aesthetic,
       prompt: finalPrompt, cli, cost, time: new Date().toLocaleTimeString()
     });
     renderHistory();
-  }
-
-  // ====== COLOR DESCRIPTION ======
-  function describeColor(c) {
-    const { r, g, b } = c;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    if (max - min < 30 && lum < 0.2) return 'dark/black';
-    if (max - min < 30 && lum > 0.8) return 'white/light';
-    if (max - min < 30) return 'grey/neutral';
-
-    if (r > g && r > b) {
-      if (g > 150) return 'warm yellow-orange';
-      if (g > 80) return 'warm orange';
-      return 'red';
-    }
-    if (g > r && g > b) {
-      if (b > 150) return 'teal/cyan';
-      return 'green';
-    }
-    if (b > r && b > g) {
-      if (r > 150) return 'purple/violet';
-      return 'blue';
-    }
-    return null;
   }
 
   // ====== HISTORY ======
@@ -1271,14 +1299,11 @@
 
   function loadHistory(idx) {
     const h = history[idx];
-    const promptEl = document.getElementById('promptText');
-    promptEl.textContent = h.prompt;
-    promptEl.classList.remove('placeholder');
+    document.getElementById('promptText').textContent = h.prompt;
+    document.getElementById('promptText').classList.remove('placeholder');
     document.getElementById('copyPrompt').style.display = 'block';
-
-    const cliEl = document.getElementById('cliText');
-    cliEl.textContent = h.cli;
-    cliEl.classList.remove('placeholder');
+    document.getElementById('cliText').textContent = h.cli;
+    document.getElementById('cliText').classList.remove('placeholder');
     document.getElementById('copyCli').style.display = 'block';
   }
 
