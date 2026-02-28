@@ -12,6 +12,7 @@ Built on Google's `gemini-3.1-flash-image-preview` (Nano Banana 2) and `gemini-3
 | **Claude Code Skill** | 16-aesthetic prompt library + auto model/resolution selection |
 | **Prompt Dashboard** | Interactive web UI with 80+ prompts, pricing, features & tips |
 | **Prompt Creator** | AI prompt formulation engine — turn rough ideas into NB2-optimized prompts |
+| **Reverse Prompt** | Upload an image, get an NB2-optimized prompt to recreate it |
 
 ### Live Demo
 
@@ -181,6 +182,23 @@ The prompt formulation engine at `prompt-creator.html` transforms rough ideas in
 
 ---
 
+## Reverse Prompt
+
+The reverse prompt tool at `reverse-prompt.html` does the opposite of prompt creation — upload any image and get an NB2-optimized prompt to recreate it:
+
+- **Image Upload** — Drag & drop or file picker (JPG, PNG, WebP)
+- **Canvas API Analysis** — Extracts dominant colors (k-means clustering), brightness, contrast, color temperature, saturation, edge density
+- **Aesthetic Auto-Detection** — Maps image properties to one of 16 NB2 aesthetics via heuristic scoring
+- **Auto-Configuration** — Sets resolution, aspect ratio, and mood/lighting from image analysis
+- **Color Palette Extraction** — 5 dominant colors with click-to-copy hex values
+- **User Refinement** — Subject description, camera angle, surface, context for precision
+- **Prompt Formulation** — Combines analysis + user input through the NB2 enhancement engine
+- **CLI Command + Cost Estimate** — Ready-to-paste command with per-image cost
+
+All processing runs client-side in the browser — no API keys or backend required.
+
+---
+
 ## Claude Code Skill
 
 This project ships as a Claude Code skill. When installed, Claude automatically handles prompt crafting, model/resolution selection, and command construction.
@@ -250,6 +268,7 @@ nano-banana-2/
 ├── NANO-BANANA-2-OVERVIEW.md     # Full NB2 capabilities doc
 ├── index.html                    # Interactive prompt dashboard (6 tabs, 80+ prompts)
 ├── prompt-creator.html           # Prompt formulation engine (16 aesthetics)
+├── reverse-prompt.html           # Image → prompt reverse engineering tool
 ├── package.json
 ├── .env.example
 ├── .gitignore
@@ -269,6 +288,7 @@ This project was inspired by [kingbootoshi/nano-banana-2-skill](https://github.c
 | Claude Code Skill | ✅ Skill file | ✅ Expanded skill (476 lines, 16 aesthetics) |
 | Prompt Dashboard | ❌ | ✅ 6-tab interactive dashboard with 80+ prompts |
 | Prompt Creator | ❌ | ✅ Auto-detect aesthetic + enhancement engine |
+| Reverse Prompt | ❌ | ✅ Image → prompt via Canvas API analysis |
 | Capabilities Overview | ❌ | ✅ Full NB2 capabilities doc |
 | Live Web Demo | ❌ | ✅ Deployed on Vercel |
 | Cost Estimation UI | ❌ | ✅ In prompt creator + dashboard |
